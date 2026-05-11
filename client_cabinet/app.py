@@ -37,7 +37,8 @@ app.register_blueprint(documents_bp)
 def home():
     return redirect(url_for("auth.login"))
 
+init_db()
+create_test_admin()
+
 if __name__ == "__main__":
-    init_db()
-    create_test_admin()
     app.run(host="0.0.0.0", port=5000, debug=True)
