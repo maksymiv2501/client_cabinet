@@ -1,15 +1,14 @@
 {% extends "base.html" %}
+{% from "components/page_hero.html" import page_hero %}
 
 {% block title %}Рахунки і акти{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Рахунки і акти</h1>
-    <p>
-        Перегляд рахунків, актів, статусу оплат та PDF-документів за вибраний період
-    </p>
-</div>
-{% endblock %}
+{{ page_hero(
+    "Рахунки і акти",
+    "Перегляд рахунків, актів, статусу оплат та PDF-документів за вибраний період"
+) }}
+{% endblock %} 
 
 {% macro payments_block(invoice) %}
 <section class="invoice-section">

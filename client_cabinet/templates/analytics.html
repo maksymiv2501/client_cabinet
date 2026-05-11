@@ -1,15 +1,14 @@
 {% extends "base.html" %}
+{% from "components/page_hero.html" import page_hero %}
 
 {% block title %}Аналітика{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Аналітика</h1>
-    <p>
-        Історичні дані про споживання, вартість, план та небаланс
-    </p>
-</div>
-{% endblock %}
+{{ page_hero(
+    "Аналітика",
+    "Історичні дані про споживання, вартість, план та небаланс"
+) }}
+{% endblock %} 
 
 {% block content %}
 

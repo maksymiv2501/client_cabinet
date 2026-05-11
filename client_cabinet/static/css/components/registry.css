@@ -91,9 +91,7 @@
 }
 
 .client-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(180px, 1fr));
-    gap: 18px;
+    padding-top: 42px !important;
 }
 
 .account-summary-grid {
@@ -405,25 +403,24 @@
 }
 
 .client-title-row {
-    gap: 12px !important;
-    align-items: center !important;
+    padding-top: 18px !important;
 }
 
 .client-title-row h1 {
-    font-size: 30px !important;
+    font-size: 24px !important;
     line-height: 1.08 !important;
     max-width: 100% !important;
 }
 
 .client-status {
-    min-height: 28px !important;
+    min-height: 24px !important;
     padding: 0 14px !important;
     font-size: 12px !important;
     transform: translateY(1px);
 }
 
 .client-meta {
-    margin-top: 18px !important;
+    margin-top: 14px !important;
     gap: 42px !important;
     align-items: flex-start !important;
 }
@@ -443,7 +440,7 @@
     display: grid !important;
     grid-template-columns: repeat(3, minmax(165px, 1fr)) !important;
     gap: 14px !important;
-    padding-top: 22px !important;
+    padding-top: 42px !important;
 }
 
 .summary-card.kpi-card {

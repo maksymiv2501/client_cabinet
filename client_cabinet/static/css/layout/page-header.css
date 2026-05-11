@@ -164,32 +164,15 @@
 
 .compact-page-heading {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
 }
 
-.compact-page-heading h1,
-.page-heading h1 {
-    margin: 0 0 2px;
-
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.02em;
-
-    color: #111;
+.compact-page-heading-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
-.compact-page-heading p,
-.page-heading p {
-    margin: 0;
-
-    font-size: 12px;
-    line-height: 1.4;
-
-    color: #94a3b8;
-}
-
 
 /* ===== КНОПКА "НА ГОЛОВНУ" ===== */
 
@@ -255,11 +238,10 @@
 .consumer-header,
 .summary-cards,
 .page-header {
-    position: static !important;
-    transform: none !important;
-    top: auto !important;
-    right: auto !important;
-    margin-top: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 .consumer-header {
@@ -280,4 +262,95 @@
 
 .summary-card {
     min-width: 180px;
+}
+
+/* ===== COMPACT PAGE TOP ===== */
+
+.topbar {
+    padding: 0 !important;
+    margin-bottom: 8px !important;
+    min-height: 34px !important;
+}
+
+.page-heading-common {
+    margin-top: 0 !important;
+}
+
+.page-heading-common h1 {
+    margin: 0 0 2px !important;
+    font-size: 13px !important;
+    line-height: 1.05 !important;
+}
+
+.page-heading-common p {
+    margin: 0 !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+}
+
+.dashboard-page {
+    padding-top: 0 !important;
+}
+
+.info-banner {
+    margin-top: 10px !important;
+    margin-bottom: 14px !important;
+    padding: 12px 18px !important;
+    min-height: auto !important;
+}
+
+.panel {
+    padding-top: 22px !important;
+    padding-bottom: 22px !important;
+}
+
+.section-header {
+    margin-bottom: 12px !important;
+}
+
+.section-header h2 {
+    font-size: 18px !important;
+    margin-bottom: 4px !important;
+}
+
+.registry-table {
+    margin-top: 16px !important;
+}
+.info-banner {
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    font-weight: 700 !important;
+
+    padding: 10px 18px !important;
+    margin-top: 8px !important;
+    margin-bottom: 12px !important;
+
+    border-radius: 16px !important;
+}
+
+.info-banner br {
+    display: none;
+}
+.topbar {
+    margin-bottom: 2px !important;
+    min-height: 26px !important;
+    align-items: flex-start !important;
+}
+
+.compact-page-heading {
+    margin-top: -6px !important;
+}
+
+.compact-page-heading h1,
+.page-heading h1,
+.page-heading-common h1 {
+    margin-top: -2px !important;
+}
+
+.dashboard-page {
+    padding-top: 0 !important;
+}
+
+.info-banner {
+    margin-top: 4px !important;
 }

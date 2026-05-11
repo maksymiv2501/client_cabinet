@@ -1,0 +1,21 @@
+{% macro page_hero(title, subtitle=None, breadcrumbs=None, status=None) %}
+<div class="page-heading page-heading-common">
+    {% if breadcrumbs %}
+        <div class="breadcrumbs">
+            {{ breadcrumbs|safe }}
+        </div>
+    {% endif %}
+
+    <div class="client-title-row">
+        <h1>{{ title }}</h1>
+
+        {% if status %}
+            <span class="client-status">{{ status }}</span>
+        {% endif %}
+    </div>
+
+    {% if subtitle %}
+        <p>{{ subtitle }}</p>
+    {% endif %}
+</div>
+{% endmacro %}

@@ -1,16 +1,15 @@
 {% extends "base.html" %}
+{% from "components/page_hero.html" import page_hero %}
 
 {% block title %}Оплати{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Оплати</h1>
+{{ page_hero(
+    "Оплати",
+    "Звірка отриманих та рознесених оплат"
+) }}
+{% endblock %} 
 
-    <p>
-        Звірка отриманих та рознесених оплат
-    </p>
-</div>
-{% endblock %}
 
 {% block content %}
 
