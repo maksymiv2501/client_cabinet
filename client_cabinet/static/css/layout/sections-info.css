@@ -1,0 +1,37 @@
+/* SECTIONS */
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.filters,
+.forecast-actions {
+    display: flex;
+    gap: 14px;
+}
+
+.forecast-actions {
+    margin-top: 24px;
+}
+
+/* INFO GRID */
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+.info-item label {
+    display: block;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.info-item strong {
+    font-size: 18px;
+}
+

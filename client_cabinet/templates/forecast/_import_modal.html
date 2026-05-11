@@ -1,0 +1,16 @@
+<div id="importModal" class="forecast-modal-backdrop hidden">
+    <div class="import-modal">
+        <div class="import-modal-header">
+            <div>
+                <h2 id="importModalTitle">Імпорт Excel</h2>
+                <p class="muted">Завантажте шаблон, заповніть його та імпортуйте Excel файл</p>
+            </div>
+            <button class="modal-close" onclick="closeImportModal()">×</button>
+        </div>
+        <div class="import-modal-body">
+            <div class="import-step"><span>1</span><div><h3>Завантажити шаблон</h3><p class="muted">Шаблон відповідає вибраному типу плану</p><button class="secondary-btn" onclick="downloadImportTemplate()">Завантажити шаблон</button></div></div>
+            <div class="import-step"><span>2</span><div><h3>Обрати файл</h3><p class="muted">Підтримується формат .xlsx</p><label class="upload-box" for="importFileInput"><input id="importFileInput" type="file" accept=".xlsx,.xls" onchange="updateImportFileName(this)" hidden><div class="upload-icon">↑</div><div class="upload-content"><strong>Натисніть для вибору файлу</strong><span>або перетягніть Excel файл сюди</span></div><div id="selectedImportFile" class="upload-file-name">Файл не вибрано</div></label></div></div>
+            <div class="import-actions"><button class="secondary-btn" onclick="closeImportModal()">Скасувати</button><button class="primary-btn" onclick="submitImportFile()">Імпортувати</button></div>
+        </div>
+    </div>
+</div>

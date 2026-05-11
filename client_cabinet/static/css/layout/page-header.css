@@ -1,0 +1,283 @@
+/* ==============================================
+   PAGE HEADER — всі стилі заголовків тут
+   ============================================== */
+
+
+/* ===== TOPBAR ===== */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 6px 0;
+    margin-bottom: 14px;
+
+    gap: 16px;
+}
+
+.topbar-page {
+    flex: 1;
+    min-width: 0;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+/* ===== КНОПКА СПОВІЩЕНЬ + AVATAR ===== */
+
+.top-notification-btn,
+.profile-avatar {
+    width: 30px;
+    height: 30px;
+
+    min-width: 30px;
+    min-height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+
+    padding: 0;
+    margin: 0;
+
+    box-sizing: border-box;
+
+    border-radius: 9px;
+
+    background: #111;
+    color: #fff;
+
+    border: none;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 30px;
+
+    position: relative;
+
+    line-height: 1;
+
+    overflow: visible;
+}
+
+.top-notification-btn {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+
+    background: #0f1300;
+
+    transition:
+        background .15s ease,
+        transform .15s ease;
+}
+
+.top-notification-btn:hover {
+    background: #1e2800;
+}
+
+.top-notification-btn:active {
+    transform: scale(.96);
+}
+
+
+/* ===== ICON ===== */
+
+.notification-icon {
+    width: 15px;
+    height: 15px;
+
+    display: block;
+    flex-shrink: 0;
+}
+
+
+/* ===== BADGE ===== */
+
+.notification-count {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    transform: translate(35%, -35%);
+
+    min-width: 14px;
+    height: 14px;
+
+    padding: 0 4px;
+
+    border-radius: 999px;
+
+    background: #84bd00;
+    color: #1a2e00;
+
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #eef1f4;
+
+    box-sizing: border-box;
+
+    pointer-events: none;
+}
+
+
+/* ===== AVATAR ===== */
+
+.profile-avatar {
+    background: #111;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+
+    user-select: none;
+}
+
+
+/* ===== SEPARATOR ===== */
+
+.topbar-separator {
+    width: 1px;
+    height: 16px;
+
+    background: #e2e6ea;
+
+    flex-shrink: 0;
+}
+
+
+/* ===== ЗАГОЛОВОК СТОРІНКИ ===== */
+
+.compact-page-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.compact-page-heading h1,
+.page-heading h1 {
+    margin: 0 0 2px;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+
+    color: #111;
+}
+
+.compact-page-heading p,
+.page-heading p {
+    margin: 0;
+
+    font-size: 12px;
+    line-height: 1.4;
+
+    color: #94a3b8;
+}
+
+
+/* ===== КНОПКА "НА ГОЛОВНУ" ===== */
+
+.page-home-btn {
+    width: 28px;
+    height: 28px;
+    margin-top: 2px;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #84bd00;
+
+    border: 1px solid #dfe5ea;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+    flex-shrink: 0;
+
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 4px 10px rgba(15, 23, 42, .06);
+
+    transition:
+        background .15s ease,
+        border-color .15s ease,
+        color .15s ease,
+        transform .15s ease,
+        box-shadow .15s ease;
+}
+
+.page-home-btn:hover {
+    background: #f6ffe7;
+    color: #6ea000;
+
+    border-color: #cfe6a2;
+
+    box-shadow:
+        0 2px 6px rgba(132, 189, 0, .12),
+        0 8px 18px rgba(132, 189, 0, .14);
+}
+
+.page-home-btn:active {
+    transform: scale(.96);
+}
+
+.page-home-btn svg {
+    width: 14px;
+    height: 14px;
+
+    fill: currentColor;
+}
+/* ===== FIX: page header should not overlap topbar ===== */
+
+.topbar {
+    position: relative;
+    z-index: 20;
+}
+
+.consumer-header,
+.summary-cards,
+.page-header {
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    right: auto !important;
+    margin-top: 0 !important;
+}
+
+.consumer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.summary-cards {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.summary-card {
+    min-width: 180px;
+}

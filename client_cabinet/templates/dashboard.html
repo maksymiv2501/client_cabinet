@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Головна{% endblock %}
+
+{% block page_header %}
+        <h1>Головна панель</h1>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-page home-page">
+
+    <section class="home-hero">
+
+        <div class="home-hero-copy">
+            <h2>Операційний статус</h2>
+            <p>Активність договорів, ТКО та актуальність даних.</p>
+        </div>
+
+        <div class="home-status-grid">
+
+            <div class="home-status-item">
+                <div class="status-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M7 3h8l4 4v14H7z"></path>
+                        <path d="M15 3v5h5"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span>Договори</span>
+                    <strong>2 договори</strong>
+                </div>
+            </div>
+
+            <div class="home-status-item">
+                <div class="status-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"></path>
+                        <circle cx="12" cy="10" r="2.5"></circle>
+                    </svg>
+                </div>
+                <div>
+                    <span>ТКО</span>
+                    <strong>2 точок</strong>
+                </div>
+            </div>
+
+            <div class="home-status-item">
+                <div class="status-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M4 13a8 8 0 0 1 16 0"></path>
+                        <path d="M4 13v4a2 2 0 0 0 2 2h1v-7H6a2 2 0 0 0-2 2z"></path>
+                        <path d="M20 13v4a2 2 0 0 1-2 2h-1v-7h1a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span>Підтримка</span>
+                    <strong class="status-online">Online</strong>
+                </div>
+            </div>
+
+            <div class="home-status-item">
+                <div class="status-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+                        <path d="M8 3v4"></path>
+                        <path d="M16 3v4"></path>
+                        <path d="M4 10h16"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span>Оновлення</span>
+                    <strong>09.05.2026 · 11:02</strong>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="home-kpi-grid">
+
+        <a class="home-kpi-card" href="{{ url_for('invoices.invoices') }}">
+            <div class="home-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <rect x="3" y="6" width="18" height="12" rx="2"></rect>
+                    <path d="M3 10h18"></path>
+                    <path d="M7 15h3"></path>
+                </svg>
+            </div>
+
+            <div class="home-card-content">
+                <div class="home-kpi-title">Рахунки до оплати</div>
+                <div class="home-kpi-value">3</div>
+                <p>Є рахунки, які очікують оплати або частково оплачені.</p>
+            </div>
+
+            <div class="home-card-footer">
+                <span class="home-kpi-link">Перейти →</span>
+                <span class="home-pill home-pill-danger">1 прострочено</span>
+            </div>
+        </a>
+
+        <a class="home-kpi-card" href="{{ url_for('feedback.feedback') }}">
+            <div class="home-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <path d="M5 6h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path>
+                </svg>
+            </div>
+
+            <div class="home-card-content">
+                <div class="home-kpi-title">Звернення</div>
+                <div class="home-kpi-value">3</div>
+                <p>Оновився статус звернень або надійшла відповідь.</p>
+            </div>
+
+            <div class="home-card-footer">
+                <span class="home-kpi-link">Перейти →</span>
+                <span class="home-pill home-pill-blue">1 нова</span>
+            </div>
+        </a>
+
+        <a class="home-kpi-card" href="{{ url_for('documents.documents') }}">
+            <div class="home-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <path d="M7 3h8l4 4v14H7z"></path>
+                    <path d="M15 3v5h5"></path>
+                    <path d="M9 13h6"></path>
+                    <path d="M9 17h6"></path>
+                </svg>
+            </div>
+
+            <div class="home-card-content">
+                <div class="home-kpi-title">Документи для підписання</div>
+                <div class="home-kpi-value">2</div>
+                <p>Договори або додатки очікують підписання.</p>
+            </div>
+
+            <div class="home-card-footer">
+                <span class="home-kpi-link">Перейти →</span>
+                <span class="home-pill home-pill-warning">Потрібна дія</span>
+            </div>
+        </a>
+
+        <a class="home-kpi-card" href="{{ url_for('forecast.current_correction') }}">
+            <div class="home-card-icon warning">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+                    <path d="M8 3v4"></path>
+                    <path d="M16 3v4"></path>
+                    <path d="M4 10h16"></path>
+                    <path d="M8 15h4"></path>
+                </svg>
+            </div>
+
+            <div class="home-card-content">
+                <div class="home-kpi-title">Коригування поточного місяця</div>
+                <p>Для групи А та Б</p>
+                <div class="home-date-value">До 16.06</div>
+            </div>
+
+            <div class="home-card-footer">
+                <span class="home-kpi-link">Подати →</span>
+                <span class="home-pill home-pill-success">Доступно</span>
+            </div>
+        </a>
+
+        <a class="home-kpi-card" href="{{ url_for('forecast.next_month') }}">
+            <div class="home-card-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                    <rect x="4" y="5" width="16" height="15" rx="2"></rect>
+                    <path d="M8 3v4"></path>
+                    <path d="M16 3v4"></path>
+                    <path d="M4 10h16"></path>
+                </svg>
+            </div>
+
+            <div class="home-card-content">
+                <div class="home-kpi-title">План на наступний місяць</div>
+                <p>Дедлайн подання прогнозу</p>
+                <div class="home-date-value">До 15.06</div>
+            </div>
+
+            <div class="home-card-footer">
+                <span class="home-kpi-link">Подати →</span>
+                <span class="home-pill home-pill-warning">5 днів</span>
+            </div>
+        </a>
+
+    </section>
+
+    <section class="home-main-grid">
+
+        <div class="home-panel">
+
+            <div class="home-panel-header">
+                <div>
+                    <h2>Найближчі платежі</h2>
+                    <span>Прострочені та найближчі платежі.</span>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="payment-calendar">
+
+                    <div class="payment-card overdue actual">
+                        <div class="payment-main">
+                            <div>
+                                <div class="payment-period">Червень 2026</div>
+                                <div class="payment-number">ФАКТ-2026-061</div>
+                                <div class="payment-meta">Сплатити до 20.06.2026</div>
+                            </div>
+
+                            <div class="payment-amount">42 300 грн</div>
+                        </div>
+
+                        <div class="payment-progress">
+                            <div class="payment-progress-fill overdue"></div>
+                        </div>
+
+                        <div class="payment-footer-row">
+                            <a href="{{ url_for('invoices.invoices') }}">Переглянути розрахунок →</a>
+
+                            <div class="payment-tags">
+                                <span class="badge badge-danger">Частково оплачено</span>
+                                <span class="badge badge-danger">прострочено 2 дні</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-card">
+                        <div class="payment-main">
+                            <div>
+                                <div class="payment-period">Липень 2026</div>
+                                <div class="payment-number">АВ-2026-071</div>
+                                <div class="payment-meta">Сплатити до 05.07.2026</div>
+                            </div>
+
+                            <div class="payment-amount">18 000 грн</div>
+                        </div>
+
+                        <div class="payment-progress">
+                            <div class="payment-progress-fill"></div>
+                        </div>
+
+                        <div class="payment-footer-row">
+                            <a href="{{ url_for('invoices.invoices') }}">Переглянути →</a>
+
+                            <div class="payment-tags">
+                                <span class="badge badge-warning">До оплати</span>
+                                <span class="badge badge-neutral">18 днів</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-card">
+                        <div class="payment-main">
+                            <div>
+                                <div class="payment-period">Липень 2026</div>
+                                <div class="payment-number">АВ-2026-072</div>
+                                <div class="payment-meta">Сплатити до 15.07.2026</div>
+                            </div>
+
+                            <div class="payment-amount">12 000 грн</div>
+                        </div>
+
+                        <div class="payment-progress">
+                            <div class="payment-progress-fill"></div>
+                        </div>
+
+                        <div class="payment-footer-row">
+                            <a href="{{ url_for('invoices.invoices') }}">Переглянути →</a>
+
+                            <div class="payment-tags">
+                                <span class="badge badge-warning">До оплати</span>
+                                <span class="badge badge-neutral">28 днів</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <a href="{{ url_for('invoices.invoices') }}">Всі рахунки →</a>
+            </div>
+
+        </div>
+
+        <div class="home-panel">
+
+            <div class="home-panel-header">
+                <div>
+                    <h2>Фінансовий стан</h2>
+                    <span>Поточне сальдо за договорами.</span>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="finance-list">
+
+                    <div class="finance-card">
+                        <div class="finance-card-top">
+                            <div class="finance-number">OE-EE-1-2022/1</div>
+                            <div class="finance-status">Переплата</div>
+                        </div>
+
+                        <div class="finance-grid">
+                            <div class="finance-cell">
+                                <span>Сплачено</span>
+                                <strong>155 000 грн</strong>
+                            </div>
+
+                            <div class="finance-cell">
+                                <span>Споживання</span>
+                                <strong>147 800 грн</strong>
+                            </div>
+
+                            <div class="finance-cell positive">
+                                <span>Сальдо</span>
+                                <strong>+7 200 грн</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="finance-card warning">
+                        <div class="finance-card-top">
+                            <div class="finance-number">OE-EE-2-2023/4</div>
+                            <div class="finance-status warning">До оплати</div>
+                        </div>
+
+                        <div class="finance-grid">
+                            <div class="finance-cell">
+                                <span>Сплачено</span>
+                                <strong>62 000 грн</strong>
+                            </div>
+
+                            <div class="finance-cell">
+                                <span>Споживання</span>
+                                <strong>67 300 грн</strong>
+                            </div>
+
+                            <div class="finance-cell negative">
+                                <span>Сальдо</span>
+                                <strong>-5 300 грн</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="finance-card">
+                        <div class="finance-card-top">
+                            <div class="finance-number">OE-EE-3-2024/2</div>
+                            <div class="finance-status neutral">Без боргу</div>
+                        </div>
+
+                        <div class="finance-grid">
+                            <div class="finance-cell">
+                                <span>Сплачено</span>
+                                <strong>84 600 грн</strong>
+                            </div>
+
+                            <div class="finance-cell">
+                                <span>Споживання</span>
+                                <strong>84 600 грн</strong>
+                            </div>
+
+                            <div class="finance-cell">
+                                <span>Сальдо</span>
+                                <strong>0 грн</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <a href="{{ url_for('payments.payments') }}">Перейти до оплат →</a>
+            </div>
+
+        </div>
+
+        <div class="home-panel">
+
+            <div class="home-panel-header">
+                <div>
+                    <h2>Статистика споживання</h2>
+                    <span>Ключові показники за попередній місяць.</span>
+                </div>
+
+                <button class="home-select-btn" type="button">ТКО</button>
+            </div>
+
+            <div class="panel-body">
+                <div class="consumption-list">
+
+                    <div class="consumption-item">
+                        <div class="consumption-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                                <path d="M5 20V10"></path>
+                                <path d="M12 20V4"></path>
+                                <path d="M19 20v-7"></path>
+                            </svg>
+                        </div>
+
+                        <div class="consumption-content">
+                            <span>Споживання попереднього місяця</span>
+                            <strong>142,6 <small>тис. кВт·год</small></strong>
+                        </div>
+
+                        <span class="home-pill home-pill-success">+8,7%</span>
+                    </div>
+
+                    <div class="consumption-item">
+                        <div class="consumption-icon warning">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                                <path d="M12 3v18"></path>
+                                <path d="M5 7h14"></path>
+                                <path d="M6 7l-3 6h6z"></path>
+                                <path d="M18 7l-3 6h6z"></path>
+                            </svg>
+                        </div>
+
+                        <div class="consumption-content">
+                            <span>Небаланс попереднього місяця</span>
+                            <strong>-2,4%</strong>
+                        </div>
+
+                        <span class="home-pill home-pill-warning">+0,6 п.п.</span>
+                    </div>
+
+                    <div class="consumption-item">
+                        <div class="consumption-icon blue">
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                                <path d="M4 17l5-5 4 4 7-8"></path>
+                                <path d="M14 8h6v6"></path>
+                            </svg>
+                        </div>
+
+                        <div class="consumption-content">
+                            <span>Прогноз на наступний місяць</span>
+                            <strong>156,3 <small>тис. кВт·год</small></strong>
+                        </div>
+
+                        <span class="home-pill home-pill-blue">+9,6%</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <a href="#">Перейти до аналітики →</a>
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

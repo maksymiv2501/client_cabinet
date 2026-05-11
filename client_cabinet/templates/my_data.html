@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Мої дані{% endblock %}
+
+{% block page_header %}
+<div class="client-hero">
+    <div>
+        <div class="breadcrumbs">Мої дані <span>›</span> Дані споживача</div>
+        <div class="client-title-row">
+            <h1>{{ data.consumer.name }}</h1>
+            <span class="client-status">Активний споживач</span>
+        </div>
+        <div class="client-meta">
+            <div>
+                <span>ЄДРПОУ</span>
+                <strong>{{ data.consumer.edrpou }}</strong>
+            </div>
+            <div>
+                <span>Тип споживача</span>
+                <strong>Юридична особа</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="client-kpi-grid">
+        <div class="summary-card kpi-card">
+            <div>
+                <span>Договорів</span>
+                <strong>{{ data.contracts|length }}</strong>
+                <small>з них активних: {{ data.contracts | selectattr('status', 'equalto', 'Активний') | list | length }}</small>
+            </div>
+        </div>
+
+        <div class="summary-card kpi-card">
+            <div>
+                <span>Активних ТКО</span>
+                <strong>{{ data.contracts | map(attribute='active_tko_count') | sum }}</strong>
+                <small>за активними договорами</small>
+            </div>
+        </div>
+
+        <div class="summary-card kpi-card">
+            <div>
+                <span>Точок комерційного обліку</span>
+                <strong>
+                    {% set ns = namespace(total=0) %}
+                    {% for contract in data.contracts %}
+                        {% for tko in contract.metering_points %}
+                            {% set ns.total = ns.total + 1 %}
+                        {% endfor %}
+                    {% endfor %}
+                    {{ ns.total }}
+                </strong>
+                <small>усього в кабінеті</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="readonly-note">Дані доступні лише для перегляду. Для внесення змін зверніться до відповідального менеджера.</div>
+
+<div class="registry-two-column">
+    <section class="panel registry-panel">
+        <div class="section-header section-header-icon">
+            <div>
+                <h2>Адресні дані</h2>
+                <span class="muted">Юридична, поштова та інші адреси споживача</span>
+            </div>
+        </div>
+
+        <table class="registry-table compact-table">
+            <thead>
+                <tr>
+                    <th>Тип адреси</th>
+                    <th>Вулиця</th>
+                    <th>Будинок</th>
+                    <th>Квартира/офіс</th>
+                    <th>Індекс</th>
+                    <th>Місто</th>
+                    <th>Країна</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Юридична</td>
+                    <td>{{ data.consumer.legal_address.street }}</td>
+                    <td>{{ data.consumer.legal_address.building }}</td>
+                    <td>{{ data.consumer.legal_address.office }}</td>
+                    <td>{{ data.consumer.legal_address.index }}</td>
+                    <td>{{ data.consumer.legal_address.city }}</td>
+                    <td>{{ data.consumer.legal_address.country }}</td>
+                </tr>
+                <tr>
+                    <td>Поштова</td>
+                    <td>{{ data.consumer.postal_address.street }}</td>
+                    <td>{{ data.consumer.postal_address.building }}</td>
+                    <td>{{ data.consumer.postal_address.office }}</td>
+                    <td>{{ data.consumer.postal_address.index }}</td>
+                    <td>{{ data.consumer.postal_address.city }}</td>
+                    <td>{{ data.consumer.postal_address.country }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel registry-panel">
+        <div class="section-header section-header-icon">
+            <div>
+                <h2>Банківські рахунки</h2>
+                <span class="muted">Банківські реквізити споживача</span>
+            </div>
+        </div>
+
+        <table class="registry-table compact-table">
+            <thead>
+                <tr>
+                    <th>Призначення</th>
+                    <th>Банк</th>
+                    <th>МФО</th>
+                    <th>IBAN</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in data.bank_accounts %}
+                    <tr>
+                        <td>{{ account.purpose }}</td>
+                        <td>{{ account.bank }}</td>
+                        <td>{{ account.mfo }}</td>
+                        <td><strong>{{ account.iban }}</strong></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<section class="panel registry-panel mt">
+    <div class="section-header section-header-icon">
+        <div>
+            <h2>Договори</h2>
+            <span class="muted">Договори споживача та кількість активних ТКО в межах договору</span>
+        </div>
+    </div>
+
+    <table class="registry-table">
+        <thead>
+            <tr>
+                <th>Номер договору</th>
+                <th>Дата початку</th>
+                <th>Дата завершення</th>
+                <th>Статус</th>
+                <th>Активних ТКО</th>
+                <th>Менеджер</th>
+                <th>Телефон</th>
+                <th>Email</th>
+                <th>Примітка</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contract in data.contracts %}
+                <tr>
+                    <td><strong>{{ contract.number }}</strong></td>
+                    <td>{{ contract.date_from }}</td>
+                    <td>{{ contract.date_to }}</td>
+                    <td>
+                        <span class="badge {% if contract.status == 'Активний' %}success{% else %}warning{% endif %}">{{ contract.status }}</span>
+                    </td>
+                    <td><strong>{{ contract.active_tko_count }}</strong></td>
+                    <td>{{ contract.manager.name }}</td>
+                    <td>{{ contract.manager.phone }}</td>
+                    <td>{{ contract.manager.email }}</td>
+                    <td><span class="readonly-pill">{{ contract.note }}</span></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="panel registry-panel mt">
+    <div class="section-header section-header-icon section-header-with-toolbar">
+        <div class="section-title-group">
+            <div>
+                <h2>Точки комерційного обліку</h2>
+                <span class="muted">ТКО відображаються в межах договорів і періодів дії</span>
+            </div>
+        </div>
+
+        <div class="registry-toolbar">
+            <input id="tkoSearch" type="text" placeholder="Пошук за EIC, назвою або адресою" oninput="filterMyDataTko()">
+            <select id="tkoContractFilter" onchange="filterMyDataTko()">
+                <option value="">Всі договори</option>
+                {% for contract in data.contracts %}
+                    <option value="{{ contract.number }}">{{ contract.number }}</option>
+                {% endfor %}
+            </select>
+            <select id="tkoStatusFilter" onchange="filterMyDataTko()">
+                <option value="">Всі статуси</option>
+                <option value="Активна">Активна</option>
+                <option value="Неактивна">Неактивна</option>
+            </select>
+        </div>
+    </div>
+
+    <table class="registry-table">
+        <thead>
+            <tr>
+                <th>Договір</th>
+                <th>EIC</th>
+                <th>Назва ТКО</th>
+                <th>Адреса</th>
+                <th>Період від</th>
+                <th>Період до</th>
+                <th>Статус</th>
+                <th>Примітка</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contract in data.contracts %}
+                {% for tko in contract.metering_points %}
+                    {% for period in tko.periods %}
+                        <tr class="tko-row" data-contract="{{ contract.number }}" data-status="{{ tko.status }}" data-search="{{ contract.number }} {{ tko.eic }} {{ tko.name }} {{ tko.address }} {{ period.from }} {{ period.to }} {{ tko.status }} {{ tko.note }}">
+                            <td>{{ contract.number }}</td>
+                            <td><strong>{{ tko.eic }}</strong></td>
+                            <td>{{ tko.name }}</td>
+                            <td>{{ tko.address }}</td>
+                            <td>{{ period.from }}</td>
+                            <td>{{ period.to }}</td>
+                            <td>
+                                <span class="badge {% if tko.status == 'Активна' %}success{% else %}neutral{% endif %}">{{ tko.status }}</span>
+                            </td>
+                            <td><span class="readonly-pill">{{ tko.note }}</span></td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="registry-footer" id="tkoResultCount">Показано 1–4 з 4</div>
+</section>
+
+<script>
+function filterMyDataTko() {
+    const search = (document.getElementById("tkoSearch")?.value || "").toLowerCase().trim();
+    const contract = document.getElementById("tkoContractFilter")?.value || "";
+    const status = document.getElementById("tkoStatusFilter")?.value || "";
+    const rows = document.querySelectorAll(".tko-row");
+    let visible = 0;
+
+    rows.forEach(function(row) {
+        const rowText = (row.dataset.search || row.textContent || "").toLowerCase();
+        const matchesSearch = !search || rowText.includes(search);
+        const matchesContract = !contract || row.dataset.contract === contract;
+        const matchesStatus = !status || row.dataset.status === status;
+        const show = matchesSearch && matchesContract && matchesStatus;
+        row.style.display = show ? "" : "none";
+        if (show) visible += 1;
+    });
+
+    const counter = document.getElementById("tkoResultCount");
+    if (counter) {
+        counter.textContent = visible ? `Показано 1–${visible} з ${rows.length}` : `Нічого не знайдено з ${rows.length}`;
+    }
+}
+</script>
+
+{% endblock %}

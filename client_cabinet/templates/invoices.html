@@ -1,0 +1,1150 @@
+{% extends "base.html" %}
+
+{% block title %}Рахунки і акти{% endblock %}
+
+{% block page_header %}
+<div class="page-heading">
+    <h1>Рахунки і акти</h1>
+    <p>
+        Перегляд рахунків, актів, статусу оплат та PDF-документів за вибраний період
+    </p>
+</div>
+{% endblock %}
+
+{% macro payments_block(invoice) %}
+<section class="invoice-section">
+    <h3>Прикріплені оплати</h3>
+
+    {% if invoice.payments %}
+        <table class="registry-table compact-table">
+            <thead>
+                <tr>
+                    <th>Номер оплати</th>
+                    <th>Дата оплати</th>
+                    <th>Повна сума оплати</th>
+                    <th>Сума оплати рахунку</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in invoice.payments %}
+                    <tr>
+                        <td><strong>{{ payment.number }}</strong></td>
+                        <td>{{ payment.payment_date }}</td>
+                        <td>{{ "{:,.2f}".format(payment.total_amount).replace(",", " ") }} грн</td>
+                        <td>
+                            <strong>
+                                {{ "{:,.2f}".format(payment.invoice_amount).replace(",", " ") }} грн
+                            </strong>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            До цього рахунку ще не прикріплено оплат.
+        </div>
+    {% endif %}
+</section>
+{% endmacro %}
+
+{% macro calculation_positions_block(invoice) %}
+<section class="invoice-section">
+    <h3>Позиції розрахунку</h3>
+        <div class="invoice-summary-line">
+        Всього позицій:
+            <strong>{{ invoice.calculation_items|length }}</strong>
+        </div>
+    <table class="registry-table compact-table">
+        <thead>
+            <tr>
+                <th>№ позиції</th>
+                <th>Назва</th>
+                <th>ОСР</th>
+                <th>Обсяг</th>
+                <th>Ціна</th>
+                <th>Вартість</th>
+                <th>Деталі</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in invoice.calculation_items %}
+                <tr>
+                    <td><strong>{{ item.position_number }}</strong></td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.dso }}</td>
+                    <td>{{ "{:,.0f}".format(item.quantity).replace(",", " ") }}</td>
+                    <td>{{ "{:,.4f}".format(item.price).replace(",", " ") }}</td>
+                    <td>
+                        <strong>
+                            {{ "{:,.2f}".format(item.amount).replace(",", " ") }} грн
+                        </strong>
+                    </td>
+                    <td>
+                        {% if item.details_by_tko %}
+                            <button
+                                type="button"
+                                class="link-btn"
+                                onclick="togglePositionDetails(this)"
+                            >
+                                Показати
+                            </button>
+                        {% else %}
+                            <span class="muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% if item.details_by_tko %}
+                    <tr class="position-details-row hidden">
+                        <td colspan="7">
+                            <div class="position-details-box">
+                                <div class="position-details-title">
+                                    Склад ціни позиції {{ item.position_number }}
+                                </div>
+
+                                <table class="registry-table compact-table nested-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ЕІС ТКО</th>
+                                            <th>Адреса ТКО</th>
+                                            <th>Тип оплати</th>
+                                            <th>Обсяг</th>
+                                            <th>Ціна</th>
+                                            <th>Вартість</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {% for detail in item.details_by_tko %}
+                                            <tr>
+                                                <td>{{ detail.eic }}</td>
+                                                <td>{{ detail.address }}</td>
+                                                <td>{{ detail.payment_type }}</td>
+                                                <td>{{ "{:,.0f}".format(detail.quantity).replace(",", " ") }}</td>
+                                                <td>{{ "{:,.4f}".format(detail.price).replace(",", " ") }}</td>
+                                                <td>
+                                                    <strong>
+                                                        {{ "{:,.2f}".format(detail.amount).replace(",", " ") }} грн
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endmacro %}
+
+{% block content %}
+
+<style>
+    .compact-filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .compact-filters input,
+    .compact-filters select {
+        flex: 0 0 auto;
+    }
+
+    .compact-filters .filter-subject {
+        width: 190px;
+    }
+
+    .row-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .modal-open {
+        overflow: hidden;
+    }
+
+    .invoice-desktop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        pointer-events: none;
+    }
+
+    .invoice-modal-window {
+        position: fixed;
+        top: 5vh;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(1380px, calc(100vw - 56px));
+        height: 88vh;
+        background: #fff;
+        border-left: 3px solid #9be000;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28);
+        overflow: auto;
+        pointer-events: auto;
+        resize: both;
+        min-width: 760px;
+        min-height: 480px;
+    }
+
+    .invoice-modal-window.is-fullscreen {
+        top: 16px !important;
+        left: 16px !important;
+        right: 16px;
+        bottom: 16px;
+        width: calc(100vw - 32px);
+        height: calc(100vh - 32px);
+        transform: none !important;
+        resize: none;
+    }
+
+    .invoice-modal-window.is-minimized {
+        display: none;
+    }
+
+    .invoice-modal-top {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 18px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+        cursor: move;
+    }
+
+    .invoice-modal-body {
+        padding: 22px 24px 28px;
+    }
+
+    .invoice-period-label {
+        color: #6b7280;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .invoice-modal-title {
+        margin: 0;
+        font-size: 22px;
+        color: #111827;
+    }
+
+    .invoice-modal-subtitle {
+        margin: 6px 0 0;
+        color: #4b5563;
+    }
+
+    .invoice-modal-side {
+        padding-right: 120px;
+        text-align: right;
+    }
+
+    .invoice-modal-amount {
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .invoice-modal-badges {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    .modal-controls {
+        position: absolute;
+        top: 16px;
+        right: 18px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .modal-control-btn {
+        border: 0;
+        background: transparent;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+    }
+
+    .modal-control-btn:hover {
+        background: #f1f5f9;
+    }
+
+    .invoice-section {
+        margin-bottom: 28px;
+    }
+
+    .invoice-section h3 {
+        margin: 0 0 14px;
+        font-size: 16px;
+        color: #111827;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .details-grid div {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff;
+    }
+
+    .details-grid-wide {
+        grid-column: span 2;
+    }
+
+    .details-grid span {
+        display: block;
+        color: #64748b;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .details-grid strong {
+        display: block;
+        color: #0f172a;
+    }
+
+    .fact-breakdown-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .fact-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .fact-line:last-child {
+        border-bottom: 0;
+    }
+
+    .brand-green {
+        color: #4d7c0f !important;
+    }
+
+    .brand-red {
+        color: #b91c1c !important;
+    }
+
+    .calculation-result-card {
+        margin: 4px 0 28px;
+        padding: 18px;
+        border-radius: 14px;
+        background: #111;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+    }
+
+    .calculation-result-card span {
+        display: block;
+        color: #cbd5e1;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .calculation-result-card strong {
+        font-size: 22px;
+    }
+
+    .calculation-result-card p {
+        max-width: 340px;
+        margin: 0;
+        color: #e5e7eb;
+    }
+
+    .result-positive {
+        color: #9be000;
+    }
+
+    .result-negative {
+        color: #fca5a5;
+    }
+
+    .advance-list {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .advance-row {
+        display: grid;
+        grid-template-columns: 1fr 90px 150px 190px 120px 70px;
+        gap: 12px;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .advance-row:last-child {
+        border-bottom: 0;
+    }
+
+    .empty-state {
+        border: 1px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 16px;
+        color: #64748b;
+        background: #f9fafb;
+    }
+
+    .compact-table {
+        margin-bottom: 28px;
+    }
+
+    .compact-table th,
+    .compact-table td {
+        white-space: nowrap;
+    }
+
+    .position-details-row td {
+        background: #f9fafb;
+        padding: 0 12px 18px;
+    }
+
+    .position-details-box {
+        margin-top: 0;
+        border: 1px solid #e5e7eb;
+        border-left: 3px solid #9be000;
+        border-radius: 12px;
+        padding: 14px;
+        background: #fff;
+    }
+
+    .position-details-title {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 12px;
+    }
+
+    .nested-table {
+        margin-bottom: 0;
+    }
+
+    .nested-table th {
+        background: #f9fafb;
+    }
+
+    .minimized-tray {
+        position: fixed;
+        left: 188px;
+        right: 16px;
+        bottom: 14px;
+        z-index: 1100;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        pointer-events: none;
+    }
+
+    .minimized-card {
+        pointer-events: auto;
+        border: 1px solid #d1d5db;
+        border-left: 3px solid #9be000;
+        background: #fff;
+        color: #111827;
+        border-radius: 10px;
+        padding: 10px 14px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+        cursor: pointer;
+        font-weight: 700;
+        min-width: 180px;
+    }
+</style>
+
+<div class="dashboard-page">
+
+    <div class="info-banner">
+        За замовчанням відображаються всі неоплачені рахунки та документи за останні 3 місяці.
+        Якщо для періоду вже є фактичний рахунок, авансові рахунки цього періоду відображаються
+        всередині розрахунку фактичного рахунку.
+    </div>
+
+    <section class="panel registry-panel">
+        <div class="section-header">
+            <div>
+                <h2>Фільтри рахунків</h2>
+                <span class="muted">Період не може бути старшим ніж 13 місяців</span>
+            </div>
+        </div>
+
+        <div class="registry-toolbar invoice-toolbar compact-filters">
+            <input type="month">
+            <input type="month">
+
+            <select class="filter-subject">
+                <option>Всі предмети оплати</option>
+                <option>Споживання е/е</option>
+                <option>Пеня</option>
+            </select>
+
+            <select>
+                <option>Всі статуси</option>
+                <option>Сплачений</option>
+                <option>Несплачений</option>
+                <option>Протермінований</option>
+            </select>
+
+            <select>
+                <option>Всі типи рахунків</option>
+                <option>Аванс</option>
+                <option>За фактичне споживання</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="panel registry-panel mt">
+        <div class="section-header">
+            <div>
+                <h2>Рахунки</h2>
+                <span class="muted">
+                    Детальна інформація відкривається у модальному вікні з рядка рахунку
+                </span>
+            </div>
+        </div>
+
+        <table class="registry-table">
+            <thead>
+                <tr>
+                    <th>Предмет оплати</th>
+                    <th>Номер рахунку</th>
+                    <th>Тип</th>
+                    <th>Договір</th>
+                    <th>Період</th>
+                    <th>Сплатити до</th>
+                    <th>Сума з ПДВ, грн</th>
+                    <th>Оплачено</th>
+                    <th>Протерміновано</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for period in data.invoice_periods %}
+
+                    {% if period.has_actual %}
+                        {% set invoice = period.actual_invoice %}
+
+                        <tr class="row-attention">
+                            <td>{{ invoice.subject }}</td>
+                            <td>
+                                <strong>{{ invoice.number }}</strong>
+                                {% if invoice.is_new %}
+                                    <span class="new-dot">new</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ invoice.type }}</td>
+                            <td>{{ invoice.contract }}</td>
+                            <td>{{ period.period }}</td>
+                            <td>{{ invoice.due_date }}</td>
+                            <td>
+                                <strong>{{ "{:,.2f}".format(invoice.amount).replace(",", " ") }} грн</strong>
+                            </td>
+                            <td>
+                                {% if invoice.paid %}
+                                    <span class="badge success">Оплачено</span>
+                                {% else %}
+                                    <span class="badge warning">Ні</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if invoice.overdue %}
+                                    <span class="badge danger">Так</span>
+                                {% else %}
+                                    <span class="badge success">Ні</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                            <div class="row-actions">
+
+                                <a
+                                    class="link-btn"
+                                    href="{{ invoice.pdf_url }}"
+                                >
+                                    PDF
+                                </a>
+
+                                <button
+                                    type="button"
+                                    class="link-btn"
+                                    onclick="openInvoiceModal('invoice-{{ invoice.number }}')"
+                                >
+                                    Деталі
+                                </button>
+
+                                <a
+                                    href="#"
+                                    title="Скачати Excel деталізацію позицій"
+
+                                    style="
+                                        display:inline-flex;
+                                        align-items:center;
+                                        justify-content:center;
+
+                                        width:46px;
+                                        height:28px;
+
+                                        border-radius:8px;
+
+                                        background:#217346;
+                                        color:#fff;
+
+                                        font-size:11px;
+                                        font-weight:800;
+
+                                        text-decoration:none;
+
+                                        line-height:1;
+                                    "
+                                >
+                                    XLSX
+                                </a>
+                            </div>
+                            </td>
+                        </tr>
+
+                    {% else %}
+
+                        {% for invoice in period.advance_invoices %}
+                            <tr class="{% if not invoice.paid %}row-attention{% endif %}">
+                                <td>{{ invoice.subject }}</td>
+                                <td>
+                                    <strong>{{ invoice.number }}</strong>
+                                    {% if invoice.is_new %}
+                                        <span class="new-dot">new</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ invoice.type }}</td>
+                                <td>{{ invoice.contract }}</td>
+                                <td>{{ period.period }}</td>
+                                <td>{{ invoice.due_date }}</td>
+                                <td>
+                                    <strong>{{ "{:,.2f}".format(invoice.amount).replace(",", " ") }} грн</strong>
+                                </td>
+                                <td>
+                                    {% if invoice.paid %}
+                                        <span class="badge success">Оплачено</span>
+                                    {% else %}
+                                        <span class="badge warning">Ні</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if invoice.overdue %}
+                                        <span class="badge danger">Так</span>
+                                    {% else %}
+                                        <span class="badge success">Ні</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a class="link-btn" href="{{ invoice.pdf_url }}">PDF</a>
+                                        <button type="button" class="link-btn" onclick="openInvoiceModal('invoice-{{ invoice.number }}')">
+                                            Деталі
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                    {% endif %}
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel registry-panel mt">
+        <div class="section-header">
+            <div>
+                <h2>Акти</h2>
+                <span class="muted">Акти за вибраний розрахунковий період</span>
+            </div>
+        </div>
+
+        <div class="registry-toolbar acts-toolbar compact-filters">
+            <input type="month">
+            <input type="month">
+
+            <select>
+                <option>Всі договори</option>
+                <option>OE-EE-1-2022/1</option>
+                <option>OE-EE-2-2023/4</option>
+            </select>
+        </div>
+
+        <table class="registry-table">
+            <thead>
+                <tr>
+                    <th>Предмет оплати</th>
+                    <th>Номер акту</th>
+                    <th>Договір</th>
+                    <th>Період</th>
+                    <th>Дата акту</th>
+                    <th>Кількість, кВт·год</th>
+                    <th>Сума з ПДВ, грн</th>
+                    <th>PDF</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for act in data.acts %}
+                    <tr>
+                        <td>{{ act.subject }}</td>
+                        <td>
+                            <strong>{{ act.number }}</strong>
+                            {% if act.is_new %}
+                                <span class="new-dot">new</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ act.contract }}</td>
+                        <td>{{ act.period }}</td>
+                        <td>{{ act.act_date }}</td>
+                        <td>{{ "{:,.0f}".format(act.quantity).replace(",", " ") }}</td>
+                        <td>
+                            <strong>{{ "{:,.2f}".format(act.amount).replace(",", " ") }} грн</strong>
+                        </td>
+                        <td>
+                            <a class="link-btn" href="{{ act.pdf_url }}">PDF</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+</div>
+
+<div id="invoice-desktop" class="invoice-desktop hidden">
+
+    {% for period in data.invoice_periods %}
+
+        {% if period.has_actual %}
+            {% set invoice = period.actual_invoice %}
+
+            <div id="invoice-{{ invoice.number }}" class="invoice-modal-window hidden" data-title="{{ invoice.number }}">
+                <div class="invoice-modal-top">
+                    <div>
+                        <div class="invoice-period-label">{{ period.period }}</div>
+                        <h2 class="invoice-modal-title">{{ invoice.number }}</h2>
+                        <p class="invoice-modal-subtitle">
+                            {{ invoice.type }} · сплатити до {{ invoice.due_date }}
+                        </p>
+                    </div>
+
+                    <div class="invoice-modal-side">
+                        <div class="invoice-modal-amount">
+                            {{ "{:,.2f}".format(invoice.amount).replace(",", " ") }} грн
+                        </div>
+
+                        <div class="invoice-modal-badges">
+                            {% if invoice.paid %}
+                                <span class="badge success">Оплачено</span>
+                            {% else %}
+                                <span class="badge warning">Частково оплачено</span>
+                            {% endif %}
+
+                            {% if invoice.overdue %}
+                                <span class="badge danger">Протерміновано</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="modal-controls">
+                        <button type="button" class="modal-control-btn" onclick="minimizeInvoiceModal('invoice-{{ invoice.number }}')">—</button>
+                        <button type="button" class="modal-control-btn" onclick="toggleFullscreenInvoiceModal('invoice-{{ invoice.number }}')">□</button>
+                        <button type="button" class="modal-control-btn" onclick="closeInvoiceModal('invoice-{{ invoice.number }}')">×</button>
+                    </div>
+                </div>
+
+                <div class="invoice-modal-body">
+
+                    <section class="invoice-section">
+                        <h3>Основні дані рахунку</h3>
+
+                        <div class="details-grid">
+                            <div><span>Дата документу</span><strong>{{ invoice.document_date }}</strong></div>
+                            <div><span>Номер SAP</span><strong>{{ invoice.sap_number }}</strong></div>
+                            <div><span>Номер акту</span><strong>{{ invoice.act_number }}</strong></div>
+                            <div><span>Номер рахунку</span><strong>{{ invoice.number }}</strong></div>
+                            <div><span>Банківський рахунок постачальника</span><strong>{{ invoice.supplier_bank_account }}</strong></div>
+                            <div><span>Номер договору</span><strong>{{ invoice.contract }}</strong></div>
+                            <div class="details-grid-wide"><span>Що вказувати в призначенні платежу</span><strong>{{ invoice.payment_purpose }}</strong></div>
+                            <div><span>Загальна вартість без ПДВ</span><strong>{{ "{:,.2f}".format(invoice.total_without_vat).replace(",", " ") }} грн</strong></div>
+                            <div><span>Ставка ПДВ</span><strong>{{ invoice.vat_rate }}%</strong></div>
+                            <div><span>ПДВ</span><strong>{{ "{:,.2f}".format(invoice.vat_amount).replace(",", " ") }} грн</strong></div>
+                            <div><span>Вартість з ПДВ</span><strong>{{ "{:,.2f}".format(invoice.amount).replace(",", " ") }} грн</strong></div>
+                            <div><span>Чи включений розподіл</span><strong>{{ "Так" if invoice.includes_distribution else "Ні" }}</strong></div>
+                        </div>
+                    </section>
+
+                    <section class="invoice-section">
+                        <h3>Розшифровка фактичного рахунку</h3>
+
+                        <div class="fact-breakdown-card">
+                            <div class="fact-line">
+                                <span>Нараховано за фактичне споживання</span>
+                                <strong>{{ "{:,.2f}".format(invoice.details.actual_amount).replace(",", " ") }} грн</strong>
+                            </div>
+
+                            <div class="fact-line">
+                                <span>Враховано оплачених авансів</span>
+                                <strong class="brand-green">
+                                    -{{ "{:,.2f}".format(invoice.details.advance_paid_total).replace(",", " ") }} грн
+                                </strong>
+                            </div>
+
+                            <div class="fact-line">
+                                <span>Сальдо на початок періоду</span>
+                                <strong class="{% if invoice.details.opening_balance < 0 %}brand-green{% else %}brand-red{% endif %}">
+                                    {{ "{:,.2f}".format(invoice.details.opening_balance).replace(",", " ") }} грн
+                                </strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="calculation-result-card">
+                        <div>
+                            <span>Результат розрахунку</span>
+
+                            {% if invoice.details.result < 0 %}
+                                <strong class="result-positive">
+                                    Переплата {{ "{:,.2f}".format(invoice.details.result|abs).replace(",", " ") }} грн
+                                </strong>
+                            {% elif invoice.details.result > 0 %}
+                                <strong class="result-negative">
+                                    До сплати {{ "{:,.2f}".format(invoice.details.result).replace(",", " ") }} грн
+                                </strong>
+                            {% else %}
+                                <strong>Сальдо відсутнє</strong>
+                            {% endif %}
+                        </div>
+
+                        <p>{{ invoice.details.result_text }}</p>
+                    </section>
+
+                    {{ payments_block(invoice) }}
+
+                    <section class="invoice-section">
+                        <h3>Пов’язані авансові рахунки</h3>
+
+                        <div class="advance-list">
+                            {% for advance in invoice.details.linked_advances %}
+                                <div class="advance-row">
+                                    <div><strong>{{ advance.number }}</strong></div>
+                                    <div>{{ advance.advance_percent }}%</div>
+                                    <div>{{ "{:,.2f}".format(advance.amount).replace(",", " ") }} грн</div>
+                                    <div>{{ "{:,.2f}".format(advance.paid_amount).replace(",", " ") }} грн оплачено</div>
+                                    <div><span class="badge success">Оплачено</span></div>
+                                    <div><a class="link-btn" href="{{ advance.pdf_url }}">PDF</a></div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+
+                    {{ calculation_positions_block(invoice) }}
+
+                </div>
+            </div>
+
+        {% else %}
+
+            {% for invoice in period.advance_invoices %}
+
+                <div id="invoice-{{ invoice.number }}" class="invoice-modal-window hidden" data-title="{{ invoice.number }}">
+                    <div class="invoice-modal-top">
+                        <div>
+                            <div class="invoice-period-label">{{ period.period }}</div>
+                            <h2 class="invoice-modal-title">{{ invoice.number }}</h2>
+                            <p class="invoice-modal-subtitle">
+                                {{ invoice.type }} · сплатити до {{ invoice.due_date }}
+                            </p>
+                        </div>
+
+                        <div class="invoice-modal-side">
+                            <div class="invoice-modal-amount">
+                                {{ "{:,.2f}".format(invoice.amount).replace(",", " ") }} грн
+                            </div>
+
+                            <div class="invoice-modal-badges">
+                                {% if invoice.paid %}
+                                    <span class="badge success">Оплачено</span>
+                                {% else %}
+                                    <span class="badge warning">Не оплачено</span>
+                                {% endif %}
+
+                                {% if invoice.overdue %}
+                                    <span class="badge danger">Протерміновано</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="modal-controls">
+                            <button type="button" class="modal-control-btn" onclick="minimizeInvoiceModal('invoice-{{ invoice.number }}')">—</button>
+                            <button type="button" class="modal-control-btn" onclick="toggleFullscreenInvoiceModal('invoice-{{ invoice.number }}')">□</button>
+                            <button type="button" class="modal-control-btn" onclick="closeInvoiceModal('invoice-{{ invoice.number }}')">×</button>
+                        </div>
+                    </div>
+
+                    <div class="invoice-modal-body">
+                        <section class="invoice-section">
+                            <h3>Основні дані авансового рахунку</h3>
+
+                            <div class="details-grid">
+                                <div><span>Дата документу</span><strong>{{ invoice.document_date }}</strong></div>
+                                <div><span>Відсоток авансу</span><strong>{{ invoice.advance_percent }}%</strong></div>
+                                <div><span>Номер SAP</span><strong>{{ invoice.sap_number }}</strong></div>
+                                <div><span>Номер рахунку</span><strong>{{ invoice.number }}</strong></div>
+                                <div><span>Банківський рахунок постачальника</span><strong>{{ invoice.supplier_bank_account }}</strong></div>
+                                <div><span>Номер договору</span><strong>{{ invoice.contract }}</strong></div>
+                                <div class="details-grid-wide"><span>Що вказувати в призначенні платежу</span><strong>{{ invoice.payment_purpose }}</strong></div>
+                                <div><span>Загальна вартість без ПДВ</span><strong>{{ "{:,.2f}".format(invoice.total_without_vat).replace(",", " ") }} грн</strong></div>
+                                <div><span>Ставка ПДВ</span><strong>{{ invoice.vat_rate }}%</strong></div>
+                                <div><span>ПДВ</span><strong>{{ "{:,.2f}".format(invoice.vat_amount).replace(",", " ") }} грн</strong></div>
+                                <div><span>Вартість з ПДВ</span><strong>{{ "{:,.2f}".format(invoice.amount).replace(",", " ") }} грн</strong></div>
+                                <div><span>Чи включений розподіл</span><strong>{{ "Так" if invoice.includes_distribution else "Ні" }}</strong></div>
+                            </div>
+                        </section>
+
+                        {{ payments_block(invoice) }}
+                        {{ calculation_positions_block(invoice) }}
+                    </div>
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endfor %}
+
+</div>
+
+<div id="minimized-tray" class="minimized-tray"></div>
+
+<script>
+    let modalZIndex = 1001;
+
+    function getOpenModals() {
+        return Array.from(document.querySelectorAll(".invoice-modal-window:not(.hidden)"));
+    }
+
+    function syncInvoiceDesktopVisibility() {
+        const desktop = document.getElementById("invoice-desktop");
+        const hasVisible = document.querySelector(".invoice-modal-window:not(.hidden):not(.is-minimized)");
+
+        if (hasVisible) {
+            desktop.classList.remove("hidden");
+            document.body.classList.add("modal-open");
+        } else {
+            const hasAnyOpen = document.querySelector(".invoice-modal-window:not(.hidden)");
+            if (!hasAnyOpen) {
+                desktop.classList.add("hidden");
+                document.body.classList.remove("modal-open");
+            }
+        }
+    }
+
+    function bringToFront(modal) {
+        modalZIndex += 1;
+        modal.style.zIndex = modalZIndex;
+    }
+
+    function openInvoiceModal(id) {
+        const desktop = document.getElementById("invoice-desktop");
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        desktop.classList.remove("hidden");
+        modal.classList.remove("hidden");
+        modal.classList.remove("is-minimized");
+        bringToFront(modal);
+        removeMinimizedCard(id);
+        syncInvoiceDesktopVisibility();
+    }
+
+    function closeInvoiceModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("hidden");
+        modal.classList.remove("is-minimized");
+        modal.classList.remove("is-fullscreen");
+        removeMinimizedCard(id);
+        syncInvoiceDesktopVisibility();
+    }
+
+    function minimizeInvoiceModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.add("is-minimized");
+        addMinimizedCard(id, modal.dataset.title || id);
+        syncInvoiceDesktopVisibility();
+    }
+
+    function restoreInvoiceModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        document.getElementById("invoice-desktop").classList.remove("hidden");
+        modal.classList.remove("is-minimized");
+        modal.classList.remove("hidden");
+        bringToFront(modal);
+        removeMinimizedCard(id);
+        syncInvoiceDesktopVisibility();
+    }
+
+    function toggleFullscreenInvoiceModal(id) {
+        const modal = document.getElementById(id);
+
+        if (!modal) {
+            return;
+        }
+
+        modal.classList.toggle("is-fullscreen");
+        bringToFront(modal);
+    }
+
+    function addMinimizedCard(id, title) {
+    const tray = document.getElementById("minimized-tray");
+
+    if (document.getElementById("minimized-" + id)) {
+        return;
+    }
+
+    const card = document.createElement("button");
+    card.type = "button";
+    card.id = "minimized-" + id;
+    card.className = "minimized-card";
+    card.textContent = title;
+
+    card.onclick = function () {
+        restoreInvoiceModal(id);
+    };
+
+    tray.appendChild(card);
+ }
+
+    function removeMinimizedCard(id) {
+        const card = document.getElementById("minimized-" + id);
+
+        if (card) {
+            card.remove();
+        }
+    }
+
+    function togglePositionDetails(button) {
+        const row = button.closest("tr");
+        const detailsRow = row.nextElementSibling;
+
+        if (!detailsRow || !detailsRow.classList.contains("position-details-row")) {
+            return;
+        }
+
+        detailsRow.classList.toggle("hidden");
+        button.textContent = detailsRow.classList.contains("hidden") ? "Показати" : "Згорнути";
+    }
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            const openModals = getOpenModals().filter(function (modal) {
+                return !modal.classList.contains("is-minimized");
+            });
+
+            if (openModals.length > 0) {
+                const topModal = openModals.sort(function (a, b) {
+                    return Number(b.style.zIndex || 0) - Number(a.style.zIndex || 0);
+                })[0];
+
+                closeInvoiceModal(topModal.id);
+            }
+        }
+    });
+
+    document.querySelectorAll(".invoice-modal-window").forEach(function (modal) {
+        const header = modal.querySelector(".invoice-modal-top");
+
+        modal.addEventListener("mousedown", function () {
+            bringToFront(modal);
+        });
+
+        header.addEventListener("mousedown", function (event) {
+            if (event.target.closest("button")) {
+                return;
+            }
+
+            if (modal.classList.contains("is-fullscreen")) {
+                return;
+            }
+
+            bringToFront(modal);
+
+            const startX = event.clientX;
+            const startY = event.clientY;
+            const rect = modal.getBoundingClientRect();
+
+            const startLeft = rect.left;
+            const startTop = rect.top;
+
+            function onMouseMove(moveEvent) {
+                modal.style.left = startLeft + moveEvent.clientX - startX + "px";
+                modal.style.top = startTop + moveEvent.clientY - startY + "px";
+                modal.style.transform = "none";
+            }
+
+            function onMouseUp() {
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
+            }
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
+    });
+</script>
+
+{% endblock %}

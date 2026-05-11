@@ -1,0 +1,9 @@
+<script>
+let importGroup=null;
+function openImportModal(group){importGroup=group;const title=document.getElementById('importModalTitle');if(title){if(group==='A')title.textContent='Імпорт погодинного графіка';else if(group==='B')title.textContent='Імпорт місячного плану';else if(group==='YEAR')title.textContent='Імпорт річного плану';else title.textContent='Імпорт Excel';}document.getElementById('importModal').classList.remove('hidden');}
+function closeImportModal(){document.getElementById('importModal').classList.add('hidden');const input=document.getElementById('importFileInput');const label=document.getElementById('selectedImportFile');if(input)input.value='';if(label)label.textContent='Файл не вибрано';}
+function updateImportFileName(input){document.getElementById('selectedImportFile').textContent=input.files.length?input.files[0].name:'Файл не вибрано';}
+function downloadImportTemplate(){if(importGroup==='A')alert('Завантаження шаблону погодинки');else if(importGroup==='B')alert('Завантаження шаблону місячного плану');else if(importGroup==='YEAR')alert('Завантаження шаблону річного плану');else alert('Завантаження шаблону');}
+function submitImportFile(){const input=document.getElementById('importFileInput');if(!input.files.length){alert('Оберіть файл для імпорту.');return;}alert('Файл імпортовано: '+input.files[0].name);closeImportModal();}
+document.addEventListener('keydown',function(event){if(event.key==='Escape'){if(document.getElementById('importModal'))closeImportModal();if(document.getElementById('hourlyModal')&&typeof closeHourlyModal==='function')closeHourlyModal();}});
+</script>

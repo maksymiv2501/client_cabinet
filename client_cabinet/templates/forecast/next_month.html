@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Планові обсяги наступного місяця{% endblock %}
+
+{% block page_header %}
+<div class="page-heading">
+    <h1>Планові обсяги наступного місяця</h1>
+    <p>Подання плану споживання перед місяцем постачання</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="forecast-nav-clean">
+    <a href="/forecast/current-correction">Поточний місяць</a>
+    <a class="active" href="/forecast/next-month">План наступного місяця</a>
+    <a href="/forecast/next-year">План наступного року</a>
+</div>
+
+<div class="forecast-layout">
+    <section class="forecast-block">
+        <div class="forecast-top"><div class="forecast-top-left"><h2>ТКО групи Б</h2><p>Місячне уточнення планового обсягу на {{ data.period }}</p></div><div class="forecast-actions"><button class="secondary-btn" onclick="openImportModal('B')">Імпорт Excel</button><button class="secondary-btn">Перевірити</button><button class="primary-btn">Подати план</button></div></div>
+        <div class="forecast-summary">
+            <div class="forecast-card"><span>Дедлайн подання</span><strong>{{ data.rules.monthly_deadline }}</strong></div>
+            <div class="forecast-card"><span>Максимальне відхилення</span><strong>{{ data.rules.group_b_limit }}</strong></div>
+            <div class="forecast-card"><span>Готово</span><strong>{{ data.group_b | selectattr("status_class", "equalto", "success") | list | length }} ТКО</strong></div>
+            <div class="forecast-card danger"><span>Помилки</span><strong>{{ data.group_b | selectattr("status_class", "equalto", "danger") | list | length }}</strong></div>
+        </div>
+        <div class="forecast-filters"><select><option>Всі ОСР</option></select><select><option>Всі статуси</option></select><input type="text" placeholder="Пошук ТКО або EIC"></div>
+        <div class="forecast-alert">Для групи Б план подається в місячній грануляції.</div>
+        <div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>ТКО</th><th>EIC</th><th>ОСР</th><th>План з річного</th><th>Нова заявка</th><th>Відхилення</th><th>Статус</th></tr></thead><tbody id="groupBTbody">{% for row in data.group_b %}<tr><td>{{ row.tko }}</td><td>{{ row.eic }}</td><td>{{ row.osr }}</td><td>{{ "{:,.0f}".format(row.year_plan).replace(",", " ") }}</td><td><input class="{% if row.status_class == 'danger' %}error{% endif %}" type="number" value="{{ row.new_plan }}"></td><td>{{ row.deviation }}</td><td><span class="badge {{ row.status_class }}">{{ row.status }}</span></td></tr>{% endfor %}</tbody></table></div>
+        <div class="forecast-pagination"><button class="secondary-btn" onclick="prevPageB()">Назад</button><span id="pageInfoB">Сторінка 1 з 1</span><button class="secondary-btn" onclick="nextPageB()">Далі</button></div>
+    </section>
+
+    <section class="forecast-block">
+        <div class="forecast-top"><div class="forecast-top-left"><h2>ТКО групи А</h2><p>Погодинний графік на {{ data.period }} з контролем суми відносно річного плану</p></div><div class="forecast-actions"><button class="secondary-btn" onclick="openImportModal('A')">Імпорт Excel</button><button class="secondary-btn">Перевірити</button><button class="primary-btn">Подати план</button></div></div>
+        <div class="forecast-summary">
+            <div class="forecast-card"><span>Дедлайн подання</span><strong>{{ data.rules.monthly_deadline }}</strong></div>
+            <div class="forecast-card"><span>Максимальне відхилення</span><strong>{{ data.rules.group_a_limit }}</strong></div>
+            <div class="forecast-card"><span>Готово</span><strong>{{ data.group_a | selectattr("status_class", "equalto", "success") | list | length }} ТКО</strong></div>
+            <div class="forecast-card danger"><span>Помилки</span><strong>{{ data.group_a | selectattr("status_class", "equalto", "danger") | list | length }}</strong></div>
+        </div>
+        <div class="forecast-filters"><select><option>Всі ОСР</option></select><select><option>Всі статуси</option></select><input type="text" placeholder="Пошук ТКО або EIC"></div>
+        <div class="forecast-alert">Для групи А новий план подається погодинним графіком. На екрані показується тільки сума погодинки.</div>
+        <div class="forecast-table-wrap"><table class="forecast-table"><thead><tr><th>ТКО</th><th>EIC</th><th>ОСР</th><th>План з річного</th><th>Сума погодинки</th><th>Відхилення</th><th>Статус</th><th>Дії</th></tr></thead><tbody id="groupATbody">{% for row in data.group_a %}<tr><td>{{ row.tko }}</td><td>{{ row.eic }}</td><td>{{ row.osr }}</td><td>{{ "{:,.0f}".format(row.year_plan).replace(",", " ") }}</td><td>{{ "{:,.0f}".format(row.hourly_sum).replace(",", " ") }}</td><td>{{ row.deviation }}</td><td><span class="badge {{ row.status_class }}">{{ row.status }}</span></td><td><button class="table-btn" onclick="openHourlyModal('{{ row.tko }}', '{{ row.eic }}', '{{ row.year_plan }}')">Погодинка</button></td></tr>{% endfor %}</tbody></table></div>
+        <div class="forecast-pagination"><button class="secondary-btn" onclick="prevPageA()">Назад</button><span id="pageInfoA">Сторінка 1 з 1</span><button class="secondary-btn" onclick="nextPageA()">Далі</button></div>
+    </section>
+</div>
+
+{% include "forecast/_import_modal.html" %}
+<div id="hourlyModal" class="forecast-modal-backdrop hidden"><div class="hourly-modal"><div class="hourly-modal-header"><div><h2>Погодинний графік</h2><p id="hourlyModalSubtitle" class="muted">ТКО: — · EIC: —</p></div><button class="modal-close" onclick="closeHourlyModal()">×</button></div><div class="hourly-summary"><div><span>План з річного</span><strong id="hourlyYearPlan">0</strong></div><div><span>Сума погодинки</span><strong id="hourlyTotal">0</strong></div><div><span>Відхилення</span><strong id="hourlyDeviation">0%</strong></div><div><span>Статус</span><strong id="hourlyStatus">В нормі</strong></div></div><div class="hourly-toolbar"><div class="forecast-alert" style="margin:0;">Можна вставляти з Excel.</div><div class="forecast-actions"><button class="secondary-btn" onclick="clearHourlyChanges()">Очистити зміни</button><button class="secondary-btn" onclick="recalculateHourlyTotals()">Перевірити</button><button class="primary-btn" onclick="closeHourlyModal()">Застосувати</button></div></div><div class="hourly-grid-wrap"><table class="hourly-grid"><thead><tr id="hourlyHeaderRow"></tr></thead><tbody id="hourlyGridBody"></tbody></table></div></div></div>
+
+<script>
+const pageSizeA=5,pageSizeB=5;let pageA=1,pageB=1;let hourlyOriginalValues=[],hourlyPlanValue=8500;const nextMonth=7,nextYear=2026;
+function paginateTable(tbodyId,page,pageSize,pageInfoId){const rows=Array.from(document.querySelectorAll(`#${tbodyId} tr`));const totalPages=Math.max(1,Math.ceil(rows.length/pageSize));rows.forEach((row,index)=>{const start=(page-1)*pageSize,end=start+pageSize;row.style.display=index>=start&&index<end?'':'none';});document.getElementById(pageInfoId).textContent=`Сторінка ${page} з ${totalPages}`;return totalPages;}
+function nextPageA(){const t=paginateTable('groupATbody',pageA,pageSizeA,'pageInfoA');if(pageA<t)pageA++;paginateTable('groupATbody',pageA,pageSizeA,'pageInfoA');}function prevPageA(){if(pageA>1)pageA--;paginateTable('groupATbody',pageA,pageSizeA,'pageInfoA');}function nextPageB(){const t=paginateTable('groupBTbody',pageB,pageSizeB,'pageInfoB');if(pageB<t)pageB++;paginateTable('groupBTbody',pageB,pageSizeB,'pageInfoB');}function prevPageB(){if(pageB>1)pageB--;paginateTable('groupBTbody',pageB,pageSizeB,'pageInfoB');}
+function openHourlyModal(tko,eic,yearPlan){hourlyPlanValue=Number(yearPlan||8500);document.getElementById('hourlyModalSubtitle').textContent='ТКО: '+tko+' · EIC: '+eic+' · Період: Липень 2026';document.getElementById('hourlyYearPlan').textContent=formatNumber(hourlyPlanValue);document.getElementById('hourlyModal').classList.remove('hidden');generateHourlyGrid();recalculateHourlyTotals();}function closeHourlyModal(){document.getElementById('hourlyModal').classList.add('hidden');}
+function generateHourlyGrid(){const h=document.getElementById('hourlyHeaderRow'),b=document.getElementById('hourlyGridBody');let head='<th class="sticky-date-col">Дата</th>';for(let i=1;i<=24;i++)head+=`<th>${i}</th>`;head+='<th class="sticky-total-col">Разом</th>';h.innerHTML=head;let html='';hourlyOriginalValues=[];for(let d=1;d<=31;d++){let total=0,row={};html+=`<tr><td class="sticky-date-col">${String(d).padStart(2,'0')}.07.2026</td>`;for(let i=1;i<=24;i++){const v=10+((i-1)%6);row[i]=v;total+=v;html+=`<td><input class="hourly-input" type="number" value="${v}" data-day="${d}" data-hour="${i}" oninput="recalculateHourlyTotals()"></td>`;}hourlyOriginalValues.push(row);html+=`<td class="sticky-total-col" id="day-total-${d}">${total}</td></tr>`;}b.innerHTML=html;}
+function recalculateHourlyTotals(){let sum=0;for(let d=1;d<=31;d++){let day=0;document.querySelectorAll(`.hourly-input[data-day="${d}"]`).forEach(i=>day+=Number(i.value||0));const cell=document.getElementById(`day-total-${d}`);if(cell)cell.textContent=formatNumber(day);sum+=day;}const dev=hourlyPlanValue?((sum-hourlyPlanValue)/hourlyPlanValue)*100:0;document.getElementById('hourlyTotal').textContent=formatNumber(sum);document.getElementById('hourlyDeviation').textContent=(dev>=0?'+':'')+dev.toFixed(2)+'%';document.getElementById('hourlyStatus').textContent=Math.abs(dev)>10?'Перевищення':'В нормі';}
+function clearHourlyChanges(){generateHourlyGrid();recalculateHourlyTotals();}function formatNumber(v){return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}document.addEventListener('DOMContentLoaded',()=>{paginateTable('groupATbody',pageA,pageSizeA,'pageInfoA');paginateTable('groupBTbody',pageB,pageSizeB,'pageInfoB');});
+</script>
+{% include "forecast/_forecast_common_js.html" %}
+{% endblock %}

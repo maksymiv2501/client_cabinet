@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Вхід | OKKOON B2B</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="login-page">
+
+    <div class="login-bg">
+        <div class="login-glow login-glow-left"></div>
+        <div class="login-glow login-glow-right"></div>
+        <div class="login-glow login-glow-bottom"></div>
+
+        <div class="login-grid"></div>
+
+        <div class="login-word login-word-energy">ENERGY</div>
+        <div class="login-word login-word-balance">BALANCE</div>
+        <div class="login-word login-word-forecast">FORECAST</div>
+
+        <div class="login-line login-line-1"></div>
+        <div class="login-line login-line-2"></div>
+    </div>
+
+    <main class="login-shell">
+
+        <section class="login-intro">
+            <div class="login-intro-badge">
+                B2B ELEKTRO PLATFORM
+            </div>
+
+            <h2>
+                Клієнтський кабінет для управління електроспоживанням
+            </h2>
+
+            <p>
+                Контроль рахунків, оплат, прогнозів, аналітики, документів та звернень
+                в одному захищеному середовищі.
+            </p>
+
+            <div class="login-feature-list">
+                <div class="login-feature">
+                    <span></span>
+                    Рахунки, акти та деталізація розрахунків
+                </div>
+
+                <div class="login-feature">
+                    <span></span>
+                    Аналітика споживання та небалансів
+                </div>
+
+                <div class="login-feature">
+                    <span></span>
+                    Прогнозування та контроль заявок
+                </div>
+
+                <div class="login-feature">
+                    <span></span>
+                    Звернення, відповіді та SLA
+                </div>
+            </div>
+        </section>
+
+        <section class="login-card">
+
+            <div class="login-logo">
+                OKKO<span>ON</span>
+            </div>
+
+            <div class="login-title">
+                Вхід у кабінет
+            </div>
+
+            <div class="login-subtitle">
+                Авторизуйтесь, щоб перейти до персонального кабінету клієнта
+            </div>
+
+            {% if error %}
+                <div class="error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="post">
+
+                <div class="login-form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="admin@gmail.ua"
+                        required
+                    >
+                </div>
+
+                <div class="login-form-group">
+                    <label>Пароль</label>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Увійти в кабінет
+                </button>
+                <a href="#" class="login-register-btn">
+                    Зареєструватися
+                </a>
+                <div class="login-links">
+                 <a href="#" class="login-forgot-link">
+                        Забули пароль?
+                    </a>
+                </div>
+            </form>
+
+
+        </section>
+
+    </main>
+
+    <div class="login-version">
+        OKKOON B2B · demo build 2026
+    </div>
+
+</body>
+</html>

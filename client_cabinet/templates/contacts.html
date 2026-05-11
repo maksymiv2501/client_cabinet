@@ -1,0 +1,697 @@
+{% extends "base.html" %}
+
+{% block title %}Контакти{% endblock %}
+
+{% block page_header %}
+<div class="page-heading">
+    <h1>Контакти</h1>
+    <p>
+        Контактні особи, реквізити постачальника та канали для отримання документів
+    </p>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .contacts-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .contacts-hero {
+        background: #111;
+        color: #fff;
+        border-radius: 26px;
+        padding: 28px;
+        border-left: 7px solid #84bd00;
+
+        display: grid;
+        grid-template-columns: 1.4fr 0.8fr;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .contacts-hero h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+    }
+
+    .contacts-hero p {
+        margin: 0;
+        color: rgba(255,255,255,0.72);
+        line-height: 1.5;
+    }
+
+    .hero-support-box {
+        background: rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 20px;
+    }
+
+    .hero-support-box span {
+        display: block;
+        color: rgba(255,255,255,0.62);
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .hero-support-box strong {
+        display: block;
+        font-size: 22px;
+        margin-bottom: 8px;
+    }
+
+    .manager-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .manager-card {
+        background: #fff;
+        border-radius: 26px;
+        padding: 24px;
+        border: 1px solid #e5e7eb;
+        border-left: 6px solid #111827;
+        box-shadow: 0 14px 35px rgba(15,23,42,0.06);
+        transition: 0.18s;
+    }
+
+    .manager-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 44px rgba(15,23,42,0.1);
+    }
+
+    .manager-card.tech {
+        border-left-color: #111827;
+    }
+
+    .manager-card.finance {
+        border-left-color: #84bd00;
+    }
+
+    .manager-card.legal {
+        border-left-color: #f59e0b;
+    }
+
+    .manager-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 18px;
+    }
+
+    .manager-avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #84bd00, #648f00);
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 20px;
+    }
+
+    .manager-badge {
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: #f4f6f8;
+        color: #111827;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+    }
+
+    .manager-card h3 {
+        margin: 0 0 6px;
+        font-size: 24px;
+    }
+
+    .manager-role {
+        color: #64748b;
+        font-weight: 800;
+        margin-bottom: 16px;
+    }
+
+    .manager-scope {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .scope-pill {
+        padding: 7px 10px;
+        background: #f4f6f8;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #475569;
+    }
+
+    .contact-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        margin-bottom: 18px;
+    }
+
+    .contact-line span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+    .contact-line strong {
+        color: #111827;
+    }
+
+    .manager-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .contact-action {
+        border: 0;
+        border-radius: 12px;
+        padding: 10px 13px;
+        background: #111827;
+        color: #fff;
+        font-weight: 900;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .contact-action.green {
+        background: #84bd00;
+        color: #000;
+    }
+
+    .contact-action.light {
+        background: #f4f6f8;
+        color: #111827;
+    }
+
+    .contacts-two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .contact-panel {
+        background: #fff;
+        border-radius: 26px;
+        padding: 26px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 14px 35px rgba(15,23,42,0.06);
+    }
+
+    .contact-panel h2 {
+        margin: 0 0 8px;
+    }
+
+    .panel-subtitle {
+        color: #64748b;
+        margin-bottom: 22px;
+        line-height: 1.45;
+    }
+
+    .requisites-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .requisite-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 14px;
+        background: #fff;
+    }
+
+    .requisite-item.wide {
+        grid-column: span 2;
+    }
+
+    .requisite-item span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .requisite-item strong {
+        color: #111827;
+        word-break: break-word;
+    }
+
+    .copy-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .copy-btn {
+        border: 0;
+        border-radius: 10px;
+        background: #84bd00;
+        color: #000;
+        font-weight: 900;
+        padding: 9px 12px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .supplier-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .supplier-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 14px;
+        background: #fff;
+    }
+
+    .supplier-item.wide {
+        grid-column: span 2;
+    }
+
+    .supplier-item span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .supplier-item strong {
+        color: #111827;
+    }
+
+    .document-email-card {
+        background: #fff;
+        border-radius: 26px;
+        padding: 26px;
+        border: 1px solid #e5e7eb;
+        border-left: 6px solid #84bd00;
+        box-shadow: 0 14px 35px rgba(15,23,42,0.06);
+
+        display: grid;
+        grid-template-columns: 1.2fr 1fr auto;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .document-email-card h2 {
+        margin: 0 0 8px;
+    }
+
+    .document-email {
+        font-size: 24px;
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .document-list {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        color: #475569;
+        font-weight: 700;
+    }
+
+    .updated-note {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #f4f6f8;
+        color: #475569;
+        font-weight: 700;
+    }
+
+    @media (max-width: 1200px) {
+        .manager-grid,
+        .contacts-two-col,
+        .document-email-card {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .contacts-hero,
+        .requisites-grid,
+        .supplier-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .requisite-item.wide,
+        .supplier-item.wide {
+            grid-column: span 1;
+        }
+    }
+</style>
+
+<div class="dashboard-page contacts-page">
+
+    <section class="contacts-hero">
+        <div>
+            <h2>Ваші контактні особи та реквізити постачальника</h2>
+            <p>
+                У цьому розділі зібрані актуальні контакти відповідальних менеджерів,
+                банківські реквізити для оплати, дані постачальника та email для отримання документів.
+            </p>
+        </div>
+
+        <div class="hero-support-box">
+            <div class="support-status">
+                <span class="support-status-dot"></span>
+                Support online
+            </div>
+
+            <span>Графік підтримки</span>
+            <strong>Пн–Пт · 09:00–18:00</strong>
+
+            <span>Аварійна підтримка</span>
+            <strong>24/7 · 0 800 999 111</strong>
+
+            <span>Середній час відповіді</span>
+            <strong>&lt; 15 хв</strong>
+
+            <div class="hero-actions">
+                <a class="hero-action" href="tel:0800999111">📞 24/7 підтримка</a>
+                <a class="hero-action" href="mailto:manager@okko.ua">✉ Написати</a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="section-header">
+            <div>
+                <h2>Відповідальні менеджери</h2>
+                <span class="muted">
+                    Розподіл обов’язків може змінюватися. У кабінеті відображаються актуальні контакти.
+                </span>
+            </div>
+        </div>
+
+        <div class="manager-grid mt">
+
+            <div class="manager-card tech">
+                <div class="manager-top">
+                    <div class="manager-avatar">АК</div>
+                    <div class="manager-badge">TECH</div>
+                </div>
+
+                <h3>Андрій Коваль</h3>
+                <div class="manager-role">Менеджер з технічних питань</div>
+
+                <div class="manager-scope">
+                    <span class="scope-pill">Покази</span>
+                    <span class="scope-pill">Номінації</span>
+                    <span class="scope-pill">Реномінації</span>
+                    <span class="scope-pill">Небаланси</span>
+                </div>
+
+                <div class="contact-lines">
+                    <div class="contact-line">
+                        <span>Телефон</span>
+                        <strong>+380671112233</strong>
+                    </div>
+
+                    <div class="contact-line">
+                        <span>Email</span>
+                        <strong>tech.manager@okko.ua</strong>
+                    </div>
+                </div>
+
+                <div class="manager-actions">
+                    <a class="contact-action" href="tel:+380671112233">Подзвонити</a>
+                    <a class="contact-action green" href="mailto:tech.manager@okko.ua">Email</a>
+                    <button class="contact-action light" onclick="copyText('tech.manager@okko.ua')">Копіювати</button>
+                </div>
+            </div>
+
+            <div class="manager-card finance">
+                <div class="manager-top">
+                    <div class="manager-avatar">ОМ</div>
+                    <div class="manager-badge">FIN</div>
+                </div>
+
+                <h3>Олена Мельник</h3>
+                <div class="manager-role">Менеджер з фінансових питань</div>
+
+                <div class="manager-scope">
+                    <span class="scope-pill">Акти звірки</span>
+                    <span class="scope-pill">Рахунки</span>
+                    <span class="scope-pill">Оплати</span>
+                    <span class="scope-pill">Заборгованість</span>
+                </div>
+
+                <div class="contact-lines">
+                    <div class="contact-line">
+                        <span>Телефон</span>
+                        <strong>+380672223344</strong>
+                    </div>
+
+                    <div class="contact-line">
+                        <span>Email</span>
+                        <strong>finance.manager@okko.ua</strong>
+                    </div>
+                </div>
+
+                <div class="manager-actions">
+                    <a class="contact-action" href="tel:+380672223344">Подзвонити</a>
+                    <a class="contact-action green" href="mailto:finance.manager@okko.ua">Email</a>
+                    <button class="contact-action light" onclick="copyText('finance.manager@okko.ua')">Копіювати</button>
+                </div>
+            </div>
+
+            <div class="manager-card legal">
+                <div class="manager-top">
+                    <div class="manager-avatar">МБ</div>
+                    <div class="manager-badge">LEGAL</div>
+                </div>
+
+                <h3>Марія Бойко</h3>
+                <div class="manager-role">Менеджер з юридичних питань</div>
+
+                <div class="manager-scope">
+                    <span class="scope-pill">Договори</span>
+                    <span class="scope-pill">Додатки</span>
+                    <span class="scope-pill">Реквізити</span>
+                    <span class="scope-pill">Документи</span>
+                </div>
+
+                <div class="contact-lines">
+                    <div class="contact-line">
+                        <span>Телефон</span>
+                        <strong>+380673334455</strong>
+                    </div>
+
+                    <div class="contact-line">
+                        <span>Email</span>
+                        <strong>legal.manager@okko.ua</strong>
+                    </div>
+                </div>
+
+                <div class="manager-actions">
+                    <a class="contact-action" href="tel:+380673334455">Подзвонити</a>
+                    <a class="contact-action green" href="mailto:legal.manager@okko.ua">Email</a>
+                    <button class="contact-action light" onclick="copyText('legal.manager@okko.ua')">Копіювати</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="contacts-two-col">
+
+        <div class="contact-panel">
+            <h2>Банківські реквізити для оплати</h2>
+            <div class="panel-subtitle">
+                Використовуйте ці реквізити для оплат за електричну енергію згідно рахунків.
+            </div>
+
+            <div class="requisites-grid">
+                <div class="requisite-item wide">
+                    <span>Отримувач</span>
+                    <strong>ТОВ “ОККО КОНТРАКТ”</strong>
+                </div>
+
+                <div class="requisite-item">
+                    <span>ЄДРПОУ</span>
+                    <strong>12345678</strong>
+                </div>
+
+                <div class="requisite-item">
+                    <span>Банк</span>
+                    <strong>АТ “Ощадбанк”</strong>
+                </div>
+
+                <div class="requisite-item">
+                    <span>МФО</span>
+                    <strong>300465</strong>
+                </div>
+
+                <div class="requisite-item">
+                    <span>Валюта</span>
+                    <strong>UAH</strong>
+                </div>
+
+                <div class="requisite-item wide">
+                    <span>IBAN</span>
+                    <div class="copy-row">
+                        <strong id="supplierIban">UA123456789012345678901234567</strong>
+                        <button class="copy-btn" onclick="copyText('UA123456789012345678901234567')">
+                            Копіювати IBAN
+                        </button>
+                    </div>
+                </div>
+
+                <div class="requisite-item wide">
+                    <span>Призначення платежу</span>
+                    <strong>
+                        Оплата за електричну енергію згідно рахунку, без ПДВ / з ПДВ згідно умов договору
+                    </strong>
+                </div>
+            </div>
+
+            <div class="updated-note">
+                Реквізити оновлено: 08.05.2026
+            </div>
+            <div class="requisite-actions">
+                <button
+                    type="button"
+                    class="requisite-action-btn"
+                    onclick="copyAllRequisites()"
+                >
+                    Скопіювати всі реквізити
+                </button>
+
+                <a
+                    class="requisite-action-btn"
+                    href="#"
+                    style="display:inline-flex;align-items:center;text-decoration:none;"
+                >
+                    PDF реквізити
+                </a>
+            </div>
+        </div>
+
+        <div class="contact-panel">
+            <h2>Дані постачальника</h2>
+            <div class="panel-subtitle">
+                Юридична, поштова та контактна інформація постачальника.
+            </div>
+
+            <div class="supplier-grid">
+                <div class="supplier-item wide">
+                    <span>Повна назва</span>
+                    <strong>ТОВ “ОККО КОНТРАКТ”</strong>
+                </div>
+
+                <div class="supplier-item wide">
+                    <span>Юридична адреса</span>
+                    <strong>79000, м. Львів, вул. Прикладна, 1</strong>
+                </div>
+
+                <div class="supplier-item wide">
+                    <span>Поштова адреса</span>
+                    <strong>79000, м. Львів, а/с 100</strong>
+                </div>
+
+                <div class="supplier-item">
+                    <span>Телефон</span>
+                    <strong>+380322223344</strong>
+                </div>
+
+                <div class="supplier-item">
+                    <span>Email</span>
+                    <strong>office@okko.ua</strong>
+                </div>
+
+                <div class="supplier-item">
+                    <span>Сайт</span>
+                    <strong>www.okko.ua</strong>
+                </div>
+
+                <div class="supplier-item">
+                    <span>Статус</span>
+                    <strong>Постачальник електроенергії</strong>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="document-email-card">
+        <div>
+            <h2>Email для отримання документів</h2>
+            <div class="panel-subtitle">
+                На цей email постачальник надсилає рахунки, акти та акти звірки.
+            </div>
+        </div>
+
+            <div class="document-email-wrap">
+                <div class="document-email" id="documentsEmail">
+                    billing.client@company.ua
+                </div>
+
+                <div class="verified-badge">
+                    ✓ Підтверджений канал
+                </div>
+
+                <div class="document-meta">
+                    Оновлено: 08.05.2026
+                </div>
+            </div>
+
+        <div class="document-list">
+            <span>Рахунки</span>
+            <span>Акти</span>
+            <span>Акти звірки</span>
+        </div>
+
+        <div class="manager-actions">
+            <button class="contact-action green" onclick="copyText('billing.client@company.ua')">
+                Копіювати email
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    function copyText(text) {
+        navigator.clipboard.writeText(text);
+        alert("Скопійовано: " + text);
+    }
+
+    function copyAllRequisites() {
+        const text = [
+            "Отримувач: ТОВ “ОККО КОНТРАКТ”",
+            "ЄДРПОУ: 12345678",
+            "IBAN: UA123456789012345678901234567",
+            "Банк: АТ “Ощадбанк”",
+            "МФО: 300465",
+            "Валюта: UAH",
+            "Призначення платежу: Оплата за електричну енергію згідно рахунку"
+        ].join("\\n");
+
+        navigator.clipboard.writeText(text);
+        alert("Реквізити скопійовано");
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,563 @@
+/* =========================
+LAYOUT
+========================= */
+
+.layout {
+display: flex;
+}
+
+/* =========================
+SIDEBAR
+========================= */
+
+.sidebar {
+position: fixed;
+top: 0;
+left: 0;
+
+```
+width: 84px;
+height: 100vh;
+
+background: linear-gradient(
+    180deg,
+    #101900 0%,
+    #050505 100%
+);
+
+overflow: hidden;
+
+z-index: 1000;
+
+transition: width 0.25s ease;
+```
+
+}
+
+.sidebar:hover {
+width: 255px;
+}
+
+.sidebar * {
+box-sizing: border-box;
+}
+
+.sidebar-inner {
+width: 255px;
+height: 100%;
+
+```
+display: flex;
+flex-direction: column;
+
+padding: 18px 16px 18px;
+```
+
+}
+
+/* =========================
+BRAND
+========================= */
+
+.sidebar-brand {
+height: 74px;
+
+```
+display: flex;
+align-items: center;
+
+gap: 14px;
+
+margin-bottom: 6px;
+```
+
+}
+
+.sidebar-logo-icon {
+width: 52px;
+height: 52px;
+
+```
+object-fit: contain;
+
+flex-shrink: 0;
+```
+
+}
+
+/* collapsed */
+
+.sidebar:not(:hover) .sidebar-brand {
+justify-content: center;
+}
+
+.sidebar-logo-text {
+opacity: 0;
+visibility: hidden;
+
+```
+transition: 0.2s;
+
+white-space: nowrap;
+```
+
+}
+
+.sidebar:hover .sidebar-logo-text {
+opacity: 1;
+visibility: visible;
+}
+
+.logo {
+font-size: 30px;
+line-height: 1;
+
+```
+font-weight: 900;
+letter-spacing: -0.06em;
+
+color: white;
+```
+
+}
+
+.logo span {
+color: var(--green);
+}
+
+.sidebar-subtitle {
+margin-top: 4px;
+
+```
+font-size: 11px;
+font-weight: 900;
+
+text-transform: uppercase;
+letter-spacing: 0.08em;
+
+color: rgba(255,255,255,0.55);
+```
+
+}
+
+/* =========================
+NAVIGATION
+========================= */
+
+.sidebar-nav {
+display: flex;
+flex-direction: column;
+
+```
+gap: 6px;
+
+margin-top: -4px;
+```
+
+}
+
+/* labels */
+
+.nav-section-label {
+padding: 0 14px;
+margin: 10px 0 2px;
+
+```
+font-size: 11px;
+font-weight: 900;
+
+text-transform: uppercase;
+letter-spacing: 0.12em;
+
+color: rgba(255,255,255,0.3);
+
+opacity: 0;
+visibility: hidden;
+
+transition: 0.2s;
+```
+
+}
+
+.sidebar:hover .nav-section-label {
+opacity: 1;
+visibility: visible;
+}
+
+/* links */
+
+.nav-link {
+height: 46px;
+
+```
+display: flex;
+align-items: center;
+
+gap: 14px;
+
+padding: 0 16px;
+
+border-radius: 16px;
+
+color: rgba(255,255,255,0.78);
+
+text-decoration: none;
+font-weight: 700;
+
+transition: 0.2s;
+```
+
+}
+
+/* collapsed */
+
+.sidebar:not(:hover) .nav-link {
+justify-content: center;
+padding: 0;
+}
+
+/* hover */
+
+.nav-link:hover {
+background: rgba(132,189,0,0.12);
+color: var(--green);
+}
+
+/* expanded active */
+
+.sidebar:hover .nav-link.active {
+background: rgba(132,189,0,0.18);
+color: var(--green);
+}
+
+/* collapsed active */
+
+.sidebar:not(:hover) .nav-link.active {
+background: transparent;
+color: var(--green);
+}
+
+/* icons */
+
+.nav-icon {
+width: 22px;
+min-width: 22px;
+
+```
+display: flex;
+align-items: center;
+justify-content: center;
+```
+
+}
+
+.nav-icon svg {
+width: 20px;
+height: 20px;
+
+```
+stroke: currentColor;
+fill: none;
+
+stroke-width: 2;
+
+stroke-linecap: round;
+stroke-linejoin: round;
+```
+
+}
+
+/* text */
+
+.nav-text {
+opacity: 0;
+visibility: hidden;
+
+```
+transition: 0.2s;
+
+white-space: nowrap;
+```
+
+}
+
+.sidebar:hover .nav-text {
+opacity: 1;
+visibility: visible;
+}
+
+/* =========================
+FOOTER
+========================= */
+
+.sidebar-footer {
+margin-top: auto;
+
+```
+padding-top: 16px;
+
+border-top: 1px solid rgba(255,255,255,0.06);
+```
+
+}
+
+/* logout */
+
+.logout-link {
+height: 48px;
+
+```
+display: flex;
+align-items: center;
+
+gap: 14px;
+
+padding: 0 16px;
+
+border-radius: 16px;
+
+background: rgba(255,255,255,0.04);
+
+color: rgba(255,255,255,0.78);
+
+text-decoration: none;
+font-weight: 700;
+
+transition: 0.2s;
+```
+
+}
+
+/* collapsed logout */
+
+.sidebar:not(:hover) .logout-link {
+justify-content: center;
+padding: 0;
+}
+
+/* hover */
+
+.logout-link:hover {
+background: rgba(132,189,0,0.14);
+color: var(--green);
+}
+
+/* icon */
+
+.logout-icon {
+width: 22px;
+min-width: 22px;
+
+```
+display: flex;
+align-items: center;
+justify-content: center;
+```
+
+}
+
+.logout-icon svg {
+width: 20px;
+height: 20px;
+
+```
+stroke: currentColor;
+fill: none;
+
+stroke-width: 2;
+
+stroke-linecap: round;
+stroke-linejoin: round;
+```
+
+}
+
+/* text */
+
+.logout-text {
+opacity: 0;
+visibility: hidden;
+
+```
+transition: 0.2s;
+
+white-space: nowrap;
+```
+
+}
+
+.sidebar:hover .logout-text {
+opacity: 1;
+visibility: visible;
+}
+
+/* =========================
+CONTENT
+========================= */
+
+.content {
+    margin-left: 84px !important;
+    width: calc(100% - 84px) !important;
+    min-height: 100vh;
+    padding: 16px 22px 22px;  /* було 42px зверху */
+    transition: all 0.25s ease;
+}
+
+.layout:has(.sidebar:hover) .content {
+margin-left: 255px !important;
+width: calc(100% - 255px) !important;
+}
+/* FINAL HARD OVERRIDE */
+
+body .sidebar {
+    width: 84px !important;
+    min-width: 84px !important;
+    max-width: 84px !important;
+}
+
+body .sidebar:hover {
+    width: 255px !important;
+    min-width: 255px !important;
+    max-width: 255px !important;
+}
+
+body .sidebar-inner {
+    width: 255px !important;
+    min-width: 255px !important;
+}
+
+body .sidebar:not(:hover) .nav-link {
+    width: 52px !important;
+    height: 46px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+}
+
+body .sidebar:not(:hover) .nav-text,
+body .sidebar:not(:hover) .nav-section-label,
+body .sidebar:not(:hover) .sidebar-logo-text,
+body .sidebar:not(:hover) .logout-text {
+    display: none !important;
+}
+
+body .sidebar:not(:hover) .nav-link.active {
+    background: transparent !important;
+    color: var(--green) !important;
+}
+
+body .sidebar:not(:hover) .sidebar-brand {
+    justify-content: center !important;
+}
+
+body .sidebar-logo-icon {
+    width: 54px !important;
+    height: 54px !important;
+}
+
+body .sidebar:not(:hover) .logout-link {
+    width: 52px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+}
+
+body .logout-icon {
+    display: flex !important;
+    width: 22px !important;
+    min-width: 22px !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body .logout-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke: currentColor !important;
+    fill: none !important;
+}
+/* FINAL LOGO POSITION FIX */
+
+.sidebar-brand {
+    height: 76px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding-left: 14px !important;
+    margin-bottom: 8px !important;
+}
+
+.sidebar-logo-icon {
+    width: 42px !important;
+    height: 42px !important;
+    flex-shrink: 0 !important;
+}
+
+.logo {
+    font-size: 25px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+.sidebar-subtitle {
+    font-size: 10px !important;
+    white-space: nowrap !important;
+}
+
+/* згорнуте меню — лого по центру паска */
+.sidebar:not(:hover) .sidebar-brand {
+    justify-content: center !important;
+    padding-left: 0 !important;
+}
+
+.sidebar:not(:hover) .sidebar-logo-icon {
+    width: 46px !important;
+    height: 46px !important;
+}
+
+/* FIX COLLAPSED LOGO VISIBILITY */
+
+.sidebar:not(:hover) .sidebar-logo-icon {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    width: 46px !important;
+    height: 46px !important;
+
+    margin: 0 auto !important;
+}
+
+.sidebar:not(:hover) .sidebar-logo-text {
+    display: none !important;
+}
+
+.sidebar:not(:hover) .sidebar-brand {
+    width: 84px !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+
+    justify-content: center !important;
+}
+/* CENTER COLLAPSED LOGO - SAFE */
+
+.sidebar:not(:hover) .sidebar-brand {
+    width: 74px !important;
+    height: 76px !important;
+    padding: 0 !important;
+    margin-left: -16px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sidebar:not(:hover) .sidebar-logo-icon {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    width: 46px !important;
+    height: 46px !important;
+
+    margin: 0 !important;
+}

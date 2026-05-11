@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E">
+    <link rel="shortcut icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/%3E">
+
+    <title>{% block title %}B2B ELEKTRO{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="sidebar-inner">
+
+            <div class="sidebar-brand">
+                <img
+                    src="{{ url_for('static', filename='img/logo-icon.png') }}"
+                    class="sidebar-logo-icon"
+                    alt="OKKO"
+                >
+
+                <div class="sidebar-logo-text">
+                    <div class="logo">
+                        OKKO<span>ON</span>
+                    </div>
+                    <div class="sidebar-subtitle">
+                        B2B кабінет
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <div class="nav-section-label">Основне</div>
+
+                <a class="nav-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}"
+                   href="{{ url_for('dashboard.dashboard') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 11.5L12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-8.5z"/></svg>
+                    </span>
+                    <span class="nav-text">Головна</span>
+                </a>
+
+                <a class="nav-link {% if request.endpoint == 'my_data.my_data' %}active{% endif %}"
+                   href="{{ url_for('my_data.my_data') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                    </span>
+                    <span class="nav-text">Мої дані</span>
+                </a>
+
+                <a class="nav-link {% if request.endpoint == 'analytics.analytics' %}active{% endif %}"
+                   href="{{ url_for('analytics.analytics') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-9"/></svg>
+                    </span>
+                    <span class="nav-text">Аналітика</span>
+                </a>
+
+                <div class="nav-section-label">Розрахунки</div>
+
+                <a class="nav-link {% if request.endpoint == 'invoices.invoices' %}active{% endif %}"
+                   href="{{ url_for('invoices.invoices') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M7 3h10a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2V4a1 1 0 0 1 1-1z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>
+                    </span>
+                    <span class="nav-text">Рахунки і акти</span>
+                </a>
+
+                <a class="nav-link {% if request.endpoint == 'payments.payments' %}active{% endif %}"
+                   href="{{ url_for('payments.payments') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 7h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+                    </span>
+                    <span class="nav-text">Оплати</span>
+                </a>
+
+                <a class="nav-link {% if request.endpoint == 'forecast.forecast' %}active{% endif %}"
+                   href="{{ url_for('forecast.forecast') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M13 2L5 13h6l-1 9 8-12h-6l1-8z"/></svg>
+                    </span>
+                    <span class="nav-text">Прогноз споживання</span>
+                </a>
+
+                <div class="nav-section-label">Комунікації</div>
+
+                <a class="nav-link {% if request.endpoint == 'documents.documents' %}active{% endif %}"
+                   href="{{ url_for('documents.documents') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+                    </span>
+                    <span class="nav-text">Документи</span>
+                </a>
+
+                <a class="nav-link {% if request.endpoint == 'feedback.feedback' %}active{% endif %}"
+                   href="{{ url_for('feedback.feedback') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4V5z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
+                    </span>
+                    <span class="nav-text">Зворотній зв'язок</span>
+                </a>
+
+                <a class="nav-link {% if request.endpoint == 'contacts.contacts' %}active{% endif %}"
+                   href="{{ url_for('contacts.contacts') }}">
+                    <span class="nav-icon">
+                        <svg viewBox="0 0 24 24"><path d="M6 5h12v14H6z"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h3"/></svg>
+                    </span>
+                    <span class="nav-text">Контакти</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-footer">
+                <a class="logout-link" href="{{ url_for('auth.logout') }}">
+                    <span class="logout-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10 17l5-5-5-5"/>
+                            <path d="M15 12H3"/>
+                            <path d="M21 3v18"/>
+                        </svg>
+                    </span>
+                    <span class="logout-text">Вийти</span>
+                </a>
+            </div>
+
+        </div>
+
+    </aside>
+
+    <main class="content">
+
+        <header class="topbar">
+
+<div class="compact-page-heading">
+
+    {% if request.endpoint != 'dashboard.dashboard' %}
+    <a href="{{ url_for('dashboard.dashboard') }}"
+       class="page-home-btn"
+       title="На головну">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 11.2L12 4L20 11.2V19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19V11.2Z"></path>
+        </svg>
+    </a>
+    {% endif %}
+
+    <div>
+        {% block page_header %}{% endblock %}
+    </div>
+
+</div>
+                <div class="topbar-actions">
+
+                    <div class="topbar-action">
+                        <button
+                            type="button"
+                            class="top-notification-btn"
+                            onclick="openNotificationCenter()"
+                            aria-label="Сповіщення"
+                        >
+                            <svg class="notification-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            <span class="notification-count">3</span>
+                        </button>
+                    </div>
+
+                    <div class="topbar-separator"></div>
+
+                    <div class="topbar-action">
+                        <div class="profile-avatar">
+                            VM
+                        </div>
+                    </div>
+
+                </div>
+
+        </header>
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+</div>
+
+<div
+    id="notificationOverlay"
+    class="notification-overlay"
+    onclick="closeNotificationCenter()"
+></div>
+
+<aside id="notificationCenter" class="notification-center">
+
+    <div class="notification-center-header">
+        <div>
+            <h2>Журнал подій</h2>
+            <p>Системні повідомлення та дії кабінету</p>
+        </div>
+
+        <button
+            type="button"
+            class="notification-close-btn"
+            onclick="closeNotificationCenter()"
+        >
+            ×
+        </button>
+    </div>
+
+    <div class="notification-actions">
+        <button type="button" class="notification-action-btn active" data-filter="all">Усі</button>
+        <button type="button" class="notification-action-btn" data-filter="invoice">Рахунки</button>
+        <button type="button" class="notification-action-btn" data-filter="document">Документи</button>
+        <button type="button" class="notification-action-btn" data-filter="forecast">Прогнози</button>
+        <button type="button" class="notification-action-btn" data-filter="feedback">Звернення</button>
+        <button type="button" class="notification-action-btn" data-filter="system">Система</button>
+    </div>
+
+    <div class="notification-toolbar">
+        <label class="notification-checkbox">
+            <input
+                type="checkbox"
+                id="onlyUnreadNotifications"
+                onchange="filterNotifications()"
+            >
+            Тільки непрочитані
+        </label>
+
+        <button
+            type="button"
+            class="mark-read-btn"
+            onclick="markAllNotificationsRead()"
+        >
+            Позначити все прочитаним
+        </button>
+    </div>
+
+    <div class="notification-list">
+
+        <div class="notification-day-label">
+            Сьогодні
+        </div>
+
+        <a
+            class="notification-item unread warning"
+            data-type="invoice"
+            data-unread="true"
+            href="{{ url_for('invoices.invoices') }}"
+        >
+            <div class="notification-type">Рахунок</div>
+            <strong>Виставлено авансовий рахунок</strong>
+            <span>АВ-2026-071 за липень 2026 очікує оплати.</span>
+            <div class="notification-time">2 хв тому</div>
+        </a>
+
+        <a
+            class="notification-item unread warning"
+            data-type="document"
+            data-unread="true"
+            href="{{ url_for('invoices.invoices') }}"
+        >
+            <div class="notification-type">Документ</div>
+            <strong>Додаток очікує підписання</strong>
+            <span>2 документи потребують дії клієнта.</span>
+            <div class="notification-time">12 хв тому</div>
+        </a>
+
+        <a
+            class="notification-item unread"
+            data-type="feedback"
+            data-unread="true"
+            href="{{ url_for('feedback.feedback') }}"
+        >
+            <div class="notification-type">Звернення</div>
+            <strong>Надійшла відповідь на звернення</strong>
+            <span>FB-2026-0003 — постачальник надав відповідь.</span>
+            <div class="notification-time">1 год тому</div>
+        </a>
+
+        <div class="notification-day-label">
+            Вчора
+        </div>
+
+        <a
+            class="notification-item"
+            data-type="forecast"
+            data-unread="false"
+            href="{{ url_for('forecast.current_correction') }}"
+        >
+            <div class="notification-type">Прогноз</div>
+            <strong>Наближається термін подання прогнозу</strong>
+            <span>До 15.06.2026 потрібно подати прогноз для липня 2026.</span>
+            <div class="notification-time">Вчора · 16:40</div>
+        </a>
+
+        <a
+            class="notification-item"
+            data-type="system"
+            data-unread="false"
+            href="#"
+        >
+            <div class="notification-type">Система</div>
+            <strong>Оновлено дані кабінету</strong>
+            <span>Дані синхронізовано з Luxtrade.</span>
+            <div class="notification-time">Вчора · 09:15</div>
+        </a>
+
+    </div>
+
+</aside>
+
+<script>
+    let activeNotificationFilter = "all";
+
+    function openNotificationCenter() {
+        document.getElementById("notificationOverlay").classList.add("active");
+        document.getElementById("notificationCenter").classList.add("active");
+    }
+
+    function closeNotificationCenter() {
+        document.getElementById("notificationOverlay").classList.remove("active");
+        document.getElementById("notificationCenter").classList.remove("active");
+    }
+
+    function filterNotifications() {
+        const onlyUnread = document.getElementById("onlyUnreadNotifications").checked;
+        document.querySelectorAll(".notification-item").forEach(function (item) {
+            const matchesType = activeNotificationFilter === "all" || item.dataset.type === activeNotificationFilter;
+            const matchesUnread = !onlyUnread || item.dataset.unread === "true";
+            item.style.display = matchesType && matchesUnread ? "block" : "none";
+        });
+    }
+
+    function markAllNotificationsRead() {
+        document.querySelectorAll(".notification-item").forEach(function (item) {
+            item.classList.remove("unread");
+            item.dataset.unread = "false";
+        });
+        const count = document.querySelector(".notification-count");
+        if (count) count.textContent = "0";
+        filterNotifications();
+    }
+
+    document.querySelectorAll(".notification-action-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+            document.querySelectorAll(".notification-action-btn").forEach(function (item) {
+                item.classList.remove("active");
+            });
+            this.classList.add("active");
+            activeNotificationFilter = this.dataset.filter;
+            filterNotifications();
+        });
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeNotificationCenter();
+    });
+</script>
+
+</body>
+
+</html>

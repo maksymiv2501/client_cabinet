@@ -1,0 +1,1384 @@
+{% extends "base.html" %}
+
+{% block title %}Зворотній зв’язок{% endblock %}
+
+{% block page_header %}
+<div class="page-heading">
+    <h1>Зворотній зв’язок</h1>
+    <p>
+        Реєстр звернень, комунікація з ОККО-КОНТРАКТ, контроль SLA та вкладення
+    </p>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    .feedback-page {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .feedback-hero {
+        background: #111827;
+        color: #fff;
+        border-radius: 28px;
+        padding: 26px 28px;
+        border-left: 7px solid #84bd00;
+
+        display: grid;
+        grid-template-columns: 1.35fr auto;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .feedback-hero h2 {
+        margin: 0 0 8px;
+        font-size: 28px;
+    }
+
+    .feedback-hero p {
+        margin: 0;
+        color: rgba(255,255,255,0.68);
+        line-height: 1.5;
+    }
+
+    .feedback-hero-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .feedback-primary-btn,
+    .feedback-secondary-btn {
+        height: 44px;
+        padding: 0 18px;
+        border-radius: 14px;
+        border: 0;
+        font-weight: 900;
+        cursor: pointer;
+        text-decoration: none;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feedback-primary-btn {
+        background: #84bd00;
+        color: #000;
+    }
+
+    .feedback-secondary-btn {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+    }
+
+    .feedback-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .feedback-kpi-card {
+        background: #fff;
+        border-radius: 22px;
+        padding: 22px;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #84bd00;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+    }
+
+    .feedback-kpi-card.warning {
+        border-left-color: #f59e0b;
+    }
+
+    .feedback-kpi-label {
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+
+    .feedback-kpi-value {
+        color: #111827;
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1.1;
+    }
+
+    .feedback-kpi-note {
+        margin-top: 8px;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .feedback-toolbar {
+        position: sticky;
+        top: 16px;
+        z-index: 20;
+
+        background: #fff;
+        border-radius: 24px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 28px rgba(15,23,42,0.08);
+
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .feedback-toolbar input,
+    .feedback-toolbar select {
+        height: 44px;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        padding: 0 14px;
+        background: #fff;
+        font-weight: 800;
+    }
+
+    .feedback-toolbar input {
+        min-width: 320px;
+        flex: 1;
+    }
+
+    .tickets-panel {
+        background: #fff;
+        border-radius: 28px;
+        padding: 26px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 14px 35px rgba(15,23,42,0.06);
+    }
+
+    .panel-title {
+        margin: 0 0 8px;
+    }
+
+    .panel-subtitle {
+        margin: 0 0 20px;
+        color: #64748b;
+        line-height: 1.45;
+    }
+
+    .ticket-list {
+        max-height: 620px;
+        overflow-y: auto;
+        padding-right: 6px;
+
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ticket-card {
+        display: grid;
+        grid-template-columns: minmax(320px, 1.25fr) minmax(420px, 1fr) 230px;
+        gap: 20px;
+        align-items: center;
+
+        min-height: 90px;
+
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #84bd00;
+        border-radius: 20px;
+
+        padding: 14px 18px;
+
+        background: #fff;
+
+        cursor: pointer;
+        transition: 0.18s;
+    }
+
+    .ticket-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    }
+
+    .ticket-card.waiting-for-client {
+        background: #fff;
+        border-left-color: #f59e0b;
+    }
+
+    .ticket-card.in-progress {
+        border-left-color: #111827;
+    }
+
+    .ticket-card.answered {
+        border-left-color: #84bd00;
+    }
+
+    .ticket-main-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .ticket-number {
+        font-size: 17px;
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .ticket-subject {
+        font-size: 15px;
+        font-weight: 900;
+        margin-bottom: 5px;
+    }
+
+    .ticket-topic {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .ticket-compact-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        align-items: center;
+
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.45;
+    }
+
+    .ticket-meta-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #cbd5e1;
+    }
+
+    .ticket-status-area {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 7px;
+        min-width: 220px;
+    }
+
+    .ticket-primary-status {
+        font-size: 15px;
+        font-weight: 900;
+        color: #111827;
+        text-align: right;
+    }
+
+    .ticket-secondary-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #eef8d9;
+        color: #3a6d00;
+        font-size: 12px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .ticket-secondary-status.warning {
+        background: #fff2cc;
+        color: #7a5200;
+    }
+
+    .ticket-secondary-status.dark {
+        background: #111827;
+        color: #fff;
+    }
+
+    .ticket-open-hint {
+        color: #84bd00;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .feedback-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9200;
+        background: rgba(15,23,42,0.42);
+        backdrop-filter: blur(3px);
+
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .feedback-modal-overlay.active {
+        display: flex;
+    }
+
+    .feedback-modal {
+        width: min(1100px, calc(100vw - 48px));
+        max-height: min(88vh, 860px);
+        background: #fff;
+        border-radius: 28px;
+        border-left: 5px solid #84bd00;
+        box-shadow: 0 30px 80px rgba(15,23,42,0.28);
+
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .feedback-modal.create-modal {
+        width: min(980px, calc(100vw - 48px));
+    }
+
+    .feedback-modal-header {
+        padding: 22px 26px;
+        border-bottom: 1px solid #e5e7eb;
+
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: flex-start;
+
+        flex-shrink: 0;
+    }
+
+    .feedback-modal-header h2 {
+        margin: 0 0 6px;
+    }
+
+    .feedback-modal-header p {
+        margin: 0;
+        color: #64748b;
+    }
+
+    .modal-close-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        font-size: 22px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    .feedback-modal-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 24px 26px;
+    }
+
+    .ticket-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+    }
+
+    .ticket-info-box {
+        background: #f4f6f8;
+        border-radius: 20px;
+        padding: 18px;
+        margin-bottom: 18px;
+    }
+
+    .ticket-info-box h3 {
+        margin-top: 0;
+    }
+
+    .ticket-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .ticket-info-item span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 900;
+        margin-bottom: 5px;
+    }
+
+    .ticket-info-item strong {
+        color: #111827;
+    }
+
+    .process-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .process-step {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .process-step > span {
+        width: 12px;
+        height: 12px;
+        margin-top: 4px;
+        border-radius: 50%;
+        background: #cbd5e1;
+    }
+
+    .process-step.done > span {
+        background: #84bd00;
+    }
+
+    .process-step.warning > span {
+        background: #f59e0b;
+    }
+
+    .process-step.active > span {
+        background: #111827;
+    }
+
+    .process-step strong {
+        display: block;
+        color: #111827;
+        font-weight: 900;
+    }
+
+    .process-step p {
+        margin: 3px 0 0;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .timeline-message {
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 16px;
+    }
+
+    .timeline-message.client {
+        max-width: 78%;
+        border-left: 5px solid #111827;
+    }
+
+    .timeline-message.supplier {
+        max-width: 78%;
+        margin-left: auto;
+        border-left: 5px solid #84bd00;
+        background: #fbfff4;
+    }
+
+    .message-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .message-author {
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .message-role {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .message-time {
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .message-text {
+        color: #475569;
+        line-height: 1.5;
+    }
+
+    .attachment-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .attachment-pill {
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: #f4f6f8;
+        color: #111827;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .reply-box {
+        margin-top: 18px;
+        border: 1px solid #e5e7eb;
+        border-radius: 22px;
+        padding: 18px;
+    }
+
+    .reply-box h3 {
+        margin: 0 0 12px;
+    }
+
+    .reply-box textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        border: 1px solid #d1d5db;
+        border-radius: 16px;
+        padding: 14px;
+        font-weight: 700;
+    }
+
+    .reply-actions {
+        margin-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .create-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .ticket-form-section {
+        grid-column: span 2;
+        padding-bottom: 22px;
+        margin-bottom: 2px;
+        border-bottom: 1px solid #eceff3;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .ticket-form-section:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-field.full {
+        grid-column: span 2;
+    }
+
+    .form-field label {
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        border: 1px solid #d1d5db;
+        border-radius: 16px;
+        padding: 13px 14px;
+        font-weight: 700;
+    }
+
+    .form-field textarea {
+        min-height: 140px;
+        max-height: 180px;
+        resize: vertical;
+    }
+
+    .create-help-card {
+        grid-column: span 2;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #84bd00;
+        border-radius: 18px;
+        padding: 16px;
+    }
+
+    .create-help-card h3 {
+        margin: 0 0 10px;
+        font-size: 16px;
+    }
+
+    .create-help-card ul {
+        margin: 0;
+        padding-left: 18px;
+        color: #475569;
+        font-weight: 700;
+        line-height: 1.55;
+    }
+
+    .attachment-zone {
+        border: 2px dashed #d7dce5;
+        border-radius: 18px;
+        padding: 26px;
+        background: #fafbfc;
+        transition: 0.2s;
+    }
+
+    .attachment-zone:hover,
+    .attachment-zone.dragover {
+        border-color: #84bd00;
+        background: #f7faee;
+    }
+
+    .attachment-content {
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .attachment-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: #84bd00;
+        color: #000;
+        font-size: 30px;
+        font-weight: 900;
+        margin: 0 auto 14px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .attachment-title {
+        font-size: 16px;
+        font-weight: 900;
+        color: #111827;
+    }
+
+    .attachment-subtitle {
+        margin-top: 6px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .file-list {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .file-chip {
+        background: #eef8d9;
+        color: #1c1f14;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .modal-sticky-footer {
+        flex-shrink: 0;
+        border-top: 1px solid #e5e7eb;
+        padding: 16px 26px;
+        background: #fff;
+
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .cancel-btn {
+        height: 44px;
+        border-radius: 14px;
+        padding: 0 18px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #111827;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+    @media (max-width: 1200px) {
+        .feedback-kpi-grid,
+        .ticket-detail-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ticket-card {
+            grid-template-columns: 1fr;
+        }
+
+        .ticket-status-area {
+            align-items: flex-start;
+            min-width: 0;
+        }
+
+        .ticket-form-section,
+        .create-form {
+            grid-template-columns: 1fr;
+        }
+
+        .form-field.full,
+        .ticket-form-section,
+        .create-help-card {
+            grid-column: span 1;
+        }
+    }
+</style>
+
+<div class="dashboard-page feedback-page">
+
+    <section class="feedback-hero">
+        <div>
+            <h2>Service Desk ОККО-КОНТРАКТ</h2>
+            <p>
+                Створюйте звернення, отримуйте відповіді, надавайте додаткову інформацію,
+                обмінюйтеся вкладеннями та контролюйте SLA.
+            </p>
+        </div>
+
+        <div class="feedback-hero-actions">
+            <button class="feedback-primary-btn" onclick="openCreateTicketModal()">
+                Нове звернення
+            </button>
+
+            <button class="feedback-secondary-btn" onclick="exportTickets()">
+                XLSX реєстр
+            </button>
+        </div>
+    </section>
+
+    <section class="feedback-kpi-grid">
+        <div class="feedback-kpi-card">
+            <div class="feedback-kpi-label">Усього звернень</div>
+            <div class="feedback-kpi-value">{{ data.summary.total }}</div>
+            <div class="feedback-kpi-note">за весь період клієнта</div>
+        </div>
+
+        <div class="feedback-kpi-card">
+            <div class="feedback-kpi-label">В роботі</div>
+            <div class="feedback-kpi-value">{{ data.summary.open }}</div>
+            <div class="feedback-kpi-note">очікують відповіді постачальника</div>
+        </div>
+
+        <div class="feedback-kpi-card warning">
+            <div class="feedback-kpi-label">Очікують моїх даних</div>
+            <div class="feedback-kpi-value">{{ data.summary.waiting_for_client }}</div>
+            <div class="feedback-kpi-note">SLA призупинено</div>
+        </div>
+
+        <div class="feedback-kpi-card">
+            <div class="feedback-kpi-label">Нові відповіді</div>
+            <div class="feedback-kpi-value">{{ data.summary.new_answers }}</div>
+            <div class="feedback-kpi-note">потребують перегляду</div>
+        </div>
+    </section>
+
+    <section class="feedback-toolbar">
+        <input
+            type="text"
+            id="ticketSearch"
+            placeholder="Пошук за номером, темою, текстом або відповідальним"
+            onkeyup="filterTickets()"
+        >
+
+        <select id="statusFilter" onchange="filterTickets()">
+            <option value="all">Усі статуси</option>
+            <option value="in_progress">В роботі</option>
+            <option value="waiting_for_client">Очікує дані від клієнта</option>
+            <option value="answered">Відповідь надано</option>
+        </select>
+
+        <select id="slaFilter" onchange="filterTickets()">
+            <option value="all">Усі SLA</option>
+            <option value="active">SLA активний</option>
+            <option value="paused">SLA на паузі</option>
+            <option value="done">Виконано</option>
+        </select>
+
+        <select id="topicFilter" onchange="filterTickets()">
+            <option value="all">Усі теми</option>
+            {% for topic in data.topics %}
+                <option value="{{ topic.code }}">{{ topic.name }}</option>
+            {% endfor %}
+        </select>
+    </section>
+
+    <section class="tickets-panel">
+        <h2 class="panel-title">Реєстр звернень</h2>
+        <p class="panel-subtitle">
+            Усі звернення користувача, відповіді на них, статуси SLA, відповідальні менеджери та історія комунікації.
+        </p>
+
+        <div class="ticket-list">
+            {% for ticket in data.tickets %}
+                <article
+                    class="ticket-card {{ ticket.status|replace('_', '-') }}"
+                    data-ticket-id="{{ ticket.id }}"
+                    data-status="{{ ticket.status }}"
+                    data-sla="{{ ticket.sla_state }}"
+                    data-topic="{{ ticket.topic_code }}"
+                    data-search="{{ ticket.id }} {{ ticket.subject }} {{ ticket.topic }} {{ ticket.assignee }} {{ ticket.short_text }}"
+                    onclick="openTicketModal('{{ ticket.id }}')"
+                >
+                    <div class="ticket-main-info">
+                        <div class="ticket-number">{{ ticket.id }}</div>
+                        <div class="ticket-subject">{{ ticket.subject }}</div>
+                        <div class="ticket-topic">{{ ticket.topic }}</div>
+                    </div>
+
+                    <div class="ticket-compact-meta">
+                        <span>{{ ticket.created_at }}</span>
+                        <span class="ticket-meta-dot"></span>
+                        <span>{{ ticket.assignee }}</span>
+                        <span class="ticket-meta-dot"></span>
+                        <span>{{ ticket.sla_left }}</span>
+                        <span class="ticket-meta-dot"></span>
+                        <span>активність {{ ticket.last_activity }}</span>
+                    </div>
+
+                    <div class="ticket-status-area">
+                        {% if ticket.status == "waiting_for_client" %}
+                            <div class="ticket-primary-status">Очікує дані клієнта</div>
+                            <div class="ticket-secondary-status warning">SLA призупинено</div>
+                        {% elif ticket.status == "in_progress" %}
+                            <div class="ticket-primary-status">В роботі</div>
+                            <div class="ticket-secondary-status dark">SLA активний</div>
+                        {% elif ticket.status == "answered" %}
+                            <div class="ticket-primary-status">Відповідь надано</div>
+                            <div class="ticket-secondary-status">Виконано в SLA</div>
+                        {% else %}
+                            <div class="ticket-primary-status">{{ ticket.status_text }}</div>
+                        {% endif %}
+
+                        {% if ticket.has_new_answer %}
+                            <div class="ticket-secondary-status">Нова відповідь</div>
+                        {% endif %}
+
+                        <div class="ticket-open-hint">Відкрити деталі →</div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+{% for ticket in data.tickets %}
+<div class="feedback-modal-overlay" id="ticket-modal-{{ ticket.id }}" onclick="overlayClose(event, '{{ ticket.id }}')">
+    <div class="feedback-modal">
+
+        <div class="feedback-modal-header">
+            <div>
+                <h2>{{ ticket.id }} · {{ ticket.subject }}</h2>
+                <p>{{ ticket.topic }}</p>
+            </div>
+
+            <button class="modal-close-btn" onclick="closeTicketModal('{{ ticket.id }}')">
+                ×
+            </button>
+        </div>
+
+        <div class="feedback-modal-body">
+            <div class="ticket-detail-grid">
+
+                <div>
+                    <div class="ticket-info-box">
+                        <div class="ticket-info-grid">
+                            <div class="ticket-info-item">
+                                <span>Автор</span>
+                                <strong>{{ ticket.author }}</strong>
+                            </div>
+
+                            <div class="ticket-info-item">
+                                <span>Відповідальний</span>
+                                <strong>{{ ticket.assignee }}</strong>
+                            </div>
+
+                            <div class="ticket-info-item">
+                                <span>Підрозділ</span>
+                                <strong>{{ ticket.department }}</strong>
+                            </div>
+
+                            <div class="ticket-info-item">
+                                <span>Джерело</span>
+                                <strong>{{ ticket.source_system }}</strong>
+                            </div>
+
+                            <div class="ticket-info-item">
+                                <span>Статус</span>
+                                <strong>{{ ticket.status_text }}</strong>
+                            </div>
+
+                            <div class="ticket-info-item">
+                                <span>SLA</span>
+                                <strong>{{ ticket.sla_left }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-info-box">
+                        <h3>Історія обробки</h3>
+
+                        <div class="process-timeline">
+                            <div class="process-step done">
+                                <span></span>
+                                <div>
+                                    <strong>Звернення створено</strong>
+                                    <p>{{ ticket.created_at }}</p>
+                                </div>
+                            </div>
+
+                            <div class="process-step done">
+                                <span></span>
+                                <div>
+                                    <strong>Призначено відповідального</strong>
+                                    <p>{{ ticket.assignee }} · {{ ticket.department }}</p>
+                                </div>
+                            </div>
+
+                            {% if ticket.sla_state == "paused" %}
+                                <div class="process-step warning">
+                                    <span></span>
+                                    <div>
+                                        <strong>SLA призупинено</strong>
+                                        <p>Очікується додаткова інформація від клієнта</p>
+                                    </div>
+                                </div>
+                            {% elif ticket.sla_state == "done" %}
+                                <div class="process-step done">
+                                    <span></span>
+                                    <div>
+                                        <strong>Відповідь надано</strong>
+                                        <p>Звернення виконано в межах SLA</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="process-step active">
+                                    <span></span>
+                                    <div>
+                                        <strong>В роботі</strong>
+                                        <p>SLA активний · залишилось {{ ticket.sla_left }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h3>Комунікація</h3>
+
+                    <div class="timeline">
+                        {% for message in ticket.messages %}
+                            <div class="timeline-message {% if message.role == 'Клієнт' %}client{% else %}supplier{% endif %}">
+                                <div class="message-top">
+                                    <div>
+                                        <div class="message-author">{{ message.author }}</div>
+                                        <div class="message-role">{{ message.role }}</div>
+                                    </div>
+
+                                    <div class="message-time">{{ message.time }}</div>
+                                </div>
+
+                                <div class="message-text">{{ message.text }}</div>
+
+                                {% if message.attachments %}
+                                    <div class="attachment-list">
+                                        {% for file in message.attachments %}
+                                            <span class="attachment-pill">
+                                                {{ file.name }} · {{ file.size }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if ticket.status != "answered" %}
+                        <div class="reply-box">
+                            <h3>
+                                {% if ticket.client_action_required %}
+                                    Надати додаткову інформацію
+                                {% else %}
+                                    Додати повідомлення
+                                {% endif %}
+                            </h3>
+
+                            <textarea placeholder="Введіть відповідь або додаткову інформацію"></textarea>
+
+                            <div class="attachment-zone" data-zone="reply">
+                                <input type="file" class="reply-files" multiple hidden>
+
+                                <div class="attachment-content" onclick="this.closest('.attachment-zone').querySelector('input').click()">
+                                    <div class="attachment-icon">+</div>
+                                    <div class="attachment-title">Перетягніть файли або натисніть для вибору</div>
+                                    <div class="attachment-subtitle">PDF, XLSX, DOCX, JPG, PNG · до 20 МБ</div>
+                                </div>
+
+                                <div class="file-list"></div>
+                            </div>
+
+                            <div class="reply-actions">
+                                <button class="feedback-primary-btn">Надіслати</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <aside>
+                    <div class="ticket-info-box">
+                        <h3>Контроль SLA</h3>
+                        <p class="panel-subtitle">
+                            {% if ticket.sla_state == "paused" %}
+                                SLA призупинено, оскільки постачальник очікує додаткову інформацію від клієнта.
+                            {% elif ticket.sla_state == "active" %}
+                                SLA активний. Звернення перебуває в роботі.
+                            {% else %}
+                                Звернення опрацьовано у межах SLA.
+                            {% endif %}
+                        </p>
+
+                        <div class="ticket-info-grid">
+                            <div class="ticket-info-item">
+                                <span>Норма SLA</span>
+                                <strong>{{ ticket.sla_days }} днів</strong>
+                            </div>
+
+                            <div class="ticket-info-item">
+                                <span>Поточний стан</span>
+                                <strong>{{ ticket.sla_left }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-info-box">
+                        <h3>Вкладення звернення</h3>
+
+                        {% if ticket.attachments %}
+                            <div class="attachment-list">
+                                {% for file in ticket.attachments %}
+                                    <span class="attachment-pill">
+                                        {{ file.name }} · {{ file.size }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="panel-subtitle">Вкладення відсутні.</p>
+                        {% endif %}
+                    </div>
+                </aside>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endfor %}
+
+<div class="feedback-modal-overlay" id="createTicketModal" onclick="overlayCloseCreate(event)">
+    <div class="feedback-modal create-modal">
+
+        <div class="feedback-modal-header">
+            <div>
+                <h2>Нове звернення</h2>
+                <p>Оберіть тему, заповніть обов’язкові поля та додайте вкладення за потреби.</p>
+            </div>
+
+            <button class="modal-close-btn" onclick="closeCreateTicketModal()">
+                ×
+            </button>
+        </div>
+
+        <div class="feedback-modal-body">
+            <form class="create-form">
+
+                <div class="ticket-form-section">
+                    <div class="form-field full">
+                        <label>Тема звернення</label>
+                        <select id="newTicketTopic" onchange="applyTopicTemplate()" required>
+                            <option value="">Оберіть тему</option>
+                            {% for topic in data.topics %}
+                                <option
+                                    value="{{ topic.code }}"
+                                    data-template="{{ topic.template }}"
+                                    data-sla="{{ topic.sla_days }}"
+                                    data-manager="{{ topic.manager }}"
+                                >
+                                    {{ topic.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label>SLA</label>
+                        <input id="newTicketSla" type="text" readonly placeholder="Заповниться після вибору теми">
+                    </div>
+
+                    <div class="form-field">
+                        <label>Відповідальний напрямок</label>
+                        <input id="newTicketManager" type="text" readonly placeholder="Заповниться після вибору теми">
+                    </div>
+                </div>
+
+                <div class="ticket-form-section">
+                    <div class="form-field full">
+                        <label>Заголовок звернення</label>
+                        <input type="text" required placeholder="Коротко опишіть суть звернення">
+                    </div>
+
+                    <div class="create-help-card">
+                        <h3>Що потрібно надати для цього типу звернення</h3>
+
+                        <ul id="topicChecklist">
+                            <li>Оберіть тему звернення — після цього з’явиться перелік потрібних даних.</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-field full">
+                        <label>Текст звернення</label>
+                        <textarea
+                            id="newTicketText"
+                            required
+                            placeholder="Опишіть звернення своїми словами"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <div class="ticket-form-section">
+                    <div class="form-field full">
+                        <label>Вкладення</label>
+
+                        <div class="attachment-zone" id="createAttachmentZone">
+                            <input type="file" id="ticket-files" multiple hidden>
+
+                            <div class="attachment-content" onclick="document.getElementById('ticket-files').click()">
+                                <div class="attachment-icon">+</div>
+                                <div class="attachment-title">Перетягніть файли або натисніть для вибору</div>
+                                <div class="attachment-subtitle">PDF, XLSX, DOCX, JPG, PNG · до 20 МБ</div>
+                            </div>
+
+                            <div id="file-list" class="file-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="modal-sticky-footer">
+            <button type="button" class="cancel-btn" onclick="closeCreateTicketModal()">
+                Скасувати
+            </button>
+
+            <button type="button" class="feedback-primary-btn">
+                Надіслати звернення
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const ticketsData = {{ data.tickets|tojson }};
+
+    function lockBody() {
+        document.body.classList.add("modal-open");
+    }
+
+    function unlockBody() {
+        const hasOpenModal = document.querySelector(".feedback-modal-overlay.active");
+
+        if (!hasOpenModal) {
+            document.body.classList.remove("modal-open");
+        }
+    }
+
+    function openCreateTicketModal() {
+        document.getElementById("createTicketModal").classList.add("active");
+        lockBody();
+    }
+
+    function closeCreateTicketModal() {
+        document.getElementById("createTicketModal").classList.remove("active");
+        unlockBody();
+    }
+
+    function openTicketModal(ticketId) {
+        document.getElementById("ticket-modal-" + ticketId).classList.add("active");
+        lockBody();
+    }
+
+    function closeTicketModal(ticketId) {
+        document.getElementById("ticket-modal-" + ticketId).classList.remove("active");
+        unlockBody();
+    }
+
+    function overlayClose(event, ticketId) {
+        if (event.target.classList.contains("feedback-modal-overlay")) {
+            closeTicketModal(ticketId);
+        }
+    }
+
+    function overlayCloseCreate(event) {
+        if (event.target.classList.contains("feedback-modal-overlay")) {
+            closeCreateTicketModal();
+        }
+    }
+
+    function filterTickets() {
+        const search = document.getElementById("ticketSearch").value.toLowerCase();
+        const status = document.getElementById("statusFilter").value;
+        const sla = document.getElementById("slaFilter").value;
+        const topic = document.getElementById("topicFilter").value;
+
+        document.querySelectorAll(".ticket-card").forEach(card => {
+            const matchesSearch = card.dataset.search.toLowerCase().includes(search);
+            const matchesStatus = status === "all" || card.dataset.status === status;
+            const matchesSla = sla === "all" || card.dataset.sla === sla;
+            const matchesTopic = topic === "all" || card.dataset.topic === topic;
+
+            card.style.display =
+                matchesSearch && matchesStatus && matchesSla && matchesTopic
+                    ? "grid"
+                    : "none";
+        });
+    }
+
+    function applyTopicTemplate() {
+        const select = document.getElementById("newTicketTopic");
+        const selected = select.options[select.selectedIndex];
+
+        const template = selected.dataset.template || "";
+        const sla = selected.dataset.sla || "";
+        const manager = selected.dataset.manager || "";
+
+        document.getElementById("newTicketSla").value =
+            sla ? sla + " днів" : "";
+
+        document.getElementById("newTicketManager").value =
+            manager || "";
+
+        document.getElementById("newTicketText").value = "";
+
+        const checklist = document.getElementById("topicChecklist");
+
+        if (!template) {
+            checklist.innerHTML =
+                "<li>Оберіть тему звернення — після цього з’явиться перелік потрібних даних.</li>";
+            return;
+        }
+
+        const items = template
+            .replaceAll(" та ", ", ")
+            .replaceAll(" і ", ", ")
+            .split(",")
+            .map(item => item.trim())
+            .filter(Boolean);
+
+        checklist.innerHTML = items
+            .map(item => "<li>" + item + "</li>")
+            .join("");
+    }
+
+    function renderFiles(input, listElement) {
+        listElement.innerHTML = "";
+
+        Array.from(input.files).forEach(file => {
+            const item = document.createElement("div");
+            item.className = "file-chip";
+            item.textContent = file.name;
+
+            listElement.appendChild(item);
+        });
+    }
+
+    function setupFileInput(input, listElement) {
+        input.addEventListener("change", function () {
+            renderFiles(input, listElement);
+        });
+    }
+
+    function setupDropZone(zone) {
+        const input = zone.querySelector("input[type='file']");
+        const list = zone.querySelector(".file-list");
+
+        if (!input || !list) {
+            return;
+        }
+
+        setupFileInput(input, list);
+
+        zone.addEventListener("dragover", function (event) {
+            event.preventDefault();
+            zone.classList.add("dragover");
+        });
+
+        zone.addEventListener("dragleave", function () {
+            zone.classList.remove("dragover");
+        });
+
+        zone.addEventListener("drop", function (event) {
+            event.preventDefault();
+            zone.classList.remove("dragover");
+
+            input.files = event.dataTransfer.files;
+            renderFiles(input, list);
+        });
+    }
+
+    function exportTickets() {
+        const rows = ticketsData.map(ticket => ({
+            "Номер": ticket.id,
+            "Дата": ticket.created_at,
+            "Тема": ticket.topic,
+            "Заголовок": ticket.subject,
+            "Статус": ticket.status_text,
+            "Автор": ticket.author,
+            "Відповідальний": ticket.assignee,
+            "Підрозділ": ticket.department,
+            "SLA": ticket.sla_left,
+            "Остання активність": ticket.last_activity
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Звернення");
+        XLSX.writeFile(workbook, "feedback_register.xlsx");
+    }
+
+    document.querySelectorAll(".attachment-zone").forEach(setupDropZone);
+
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Escape") {
+            document.querySelectorAll(".feedback-modal-overlay").forEach(modal => {
+                modal.classList.remove("active");
+            });
+
+            document.body.classList.remove("modal-open");
+        }
+    });
+</script>
+
+{% endblock %}

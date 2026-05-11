@@ -1,0 +1,19 @@
+@import url("./base/variables.css");
+
+@import url("./layout/layout.css");
+@import url("./layout/page-header.css");
+@import url("./layout/sections-info.css");
+
+@import url("./components/cards-panels.css");
+@import url("./components/tables-badges.css");
+@import url("./components/forms-buttons.css");
+@import url("./components/registry.css");
+@import url("./components/notifications-sidebar.css");
+
+@import url("./pages/dashboard.css");
+@import url("./pages/billing.css");
+@import url("./pages/contacts.css");
+@import url("./pages/feedback-documents.css");
+@import url("./pages/login-old.css");
+@import url("./pages/login.css");
+@import url("./pages/forecast.css");

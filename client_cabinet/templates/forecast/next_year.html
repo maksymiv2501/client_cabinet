@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Планові обсяги наступного року{% endblock %}
+
+{% block page_header %}
+<div class="page-heading">
+    <h1>Планові обсяги наступного року</h1>
+    <p>Подання річного помісячного плану споживання на {{ data["year"] }} рік</p>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="forecast-nav-clean">
+    <a href="/forecast/current-correction">Поточний місяць</a>
+    <a href="/forecast/next-month">План наступного місяця</a>
+    <a class="active" href="/forecast/next-year">План наступного року</a>
+</div>
+
+<div class="forecast-layout">
+    <section class="forecast-block">
+        <div class="forecast-top">
+            <div class="forecast-top-left">
+                <h2>Річний план</h2>
+                <p>Заповнення планових обсягів у місячній грануляції для всіх ТКО</p>
+            </div>
+            <div class="forecast-actions">
+                <button class="secondary-btn" onclick="openImportModal('YEAR')">Імпорт Excel</button>
+                <button class="secondary-btn" onclick="alert('Перевірка плану виконана')">Перевірити</button>
+                <button class="primary-btn" onclick="alert('План подано')">Подати план</button>
+            </div>
+        </div>
+
+        <div class="forecast-summary">
+            <div class="forecast-card"><span>Рік планування</span><strong>{{ data["year"] }}</strong></div>
+            <div class="forecast-card"><span>Дедлайн подання</span><strong>{{ data["rules"]["yearly_deadline"] }}</strong></div>
+            <div class="forecast-card"><span>Нагадування</span><strong>{{ data["rules"]["reminder"] }}</strong></div>
+            <div class="forecast-card danger"><span>Потребують перевірки</span><strong>{{ data["items"] | selectattr("status_class", "equalto", "warning") | list | length }}</strong></div>
+        </div>
+
+        <div class="forecast-filters">
+            <select><option>Всі групи</option><option>Група A</option><option>Група B</option></select>
+            <select><option>Всі статуси</option><option>Заповнено</option><option>Потребує перевірки</option></select>
+            <input type="text" placeholder="Пошук ТКО або EIC">
+        </div>
+
+        <div class="forecast-alert">Річний план подається в місячній грануляції. Дані можна заповнювати вручну, копіювати з Excel або імпортувати файлом.</div>
+
+        <div class="forecast-table-wrap">
+            <table class="forecast-table wide">
+                <thead>
+                    <tr>
+                        <th>ТКО</th><th>EIC</th><th>Група</th>
+                        {% for month in data["months"] %}<th>{{ month }}</th>{% endfor %}
+                        <th>Разом</th><th>Статус</th>
+                    </tr>
+                </thead>
+                    <tbody id="yearPlanTbody">
+                        {% set row_counter = namespace(value=0) %}
+
+                        {% for osr, rows in data["items"] | groupby("osr") %}
+
+                            <tr class="osr-group-row">
+                                <td colspan="17">
+                                    {{ osr }}
+                                </td>
+                            </tr>
+
+                            {% for row in rows %}
+                                <tr class="year-data-row">
+                                    <td>{{ row.tko }}</td>
+                                    <td>{{ row.eic }}</td>
+                                    <td>{{ row.group }}</td>
+
+                                    {% for month in row.months %}
+                                        <td>
+                                            <input
+                                                class="excel-paste-cell"
+                                                type="number"
+                                                value="{{ month.value }}"
+                                                data-row="{{ row_counter.value }}"
+                                                data-col="{{ loop.index0 }}"
+                                                onpaste="handleExcelPaste(event, this)"
+                                            >
+                                        </td>
+                                    {% endfor %}
+
+                                    <td>{{ "{:,.0f}".format(row.total).replace(",", " ") }}</td>
+
+                                    <td>
+                                        <span class="badge {{ row.status_class }}">
+                                            {{ row.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                {% set row_counter.value = row_counter.value + 1 %}
+                            {% endfor %}
+
+                        {% endfor %}
+                    </tbody>
+                        </table>
+                        </div>
+
+                        <div class="forecast-pagination">
+
+                            <button class="primary-btn" onclick="prevPageYear()">
+                                Назад
+                            </button>
+
+                            <div class="pagination-center">
+
+                                <select id="pageSizeYear" onchange="changeYearPageSize()">
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="300" selected>300</option>
+                                    <option value="600">600</option>
+                                </select>
+
+                                <span id="pageInfoYear">
+                                    Сторінка 1 з 1
+                                </span>
+
+                            </div>
+
+                            <button class="primary-btn" onclick="nextPageYear()">
+                                Далі
+                            </button>
+
+                        </div>
+{% include "forecast/_import_modal.html" %}
+
+<script>
+let pageSizeYear = 300;
+let pageYear = 1;
+
+function getYearRows() {
+    return Array.from(document.querySelectorAll("#yearPlanTbody .year-data-row"));
+}
+
+function updateOsrHeaders() {
+    const groups = Array.from(document.querySelectorAll("#yearPlanTbody .osr-group-row"));
+
+    groups.forEach(group => {
+        let next = group.nextElementSibling;
+        let hasVisibleRow = false;
+
+        while (next && !next.classList.contains("osr-group-row")) {
+            if (
+                next.classList.contains("year-data-row") &&
+                next.style.display !== "none"
+            ) {
+                hasVisibleRow = true;
+                break;
+            }
+
+            next = next.nextElementSibling;
+        }
+
+        group.style.display = hasVisibleRow ? "" : "none";
+    });
+}
+
+function paginateYearTable() {
+    const rows = getYearRows();
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSizeYear));
+
+    if (pageYear < 1) pageYear = 1;
+    if (pageYear > totalPages) pageYear = totalPages;
+
+    rows.forEach((row, index) => {
+        const start = (pageYear - 1) * pageSizeYear;
+        const end = start + pageSizeYear;
+
+        row.style.display =
+            index >= start && index < end
+                ? ""
+                : "none";
+    });
+
+    updateOsrHeaders();
+
+    document.getElementById("pageInfoYear").textContent =
+        `Сторінка ${pageYear} з ${totalPages}`;
+}
+
+function nextPageYear() {
+    pageYear++;
+    paginateYearTable();
+}
+
+function prevPageYear() {
+    pageYear--;
+    paginateYearTable();
+}
+
+function changeYearPageSize() {
+    pageSizeYear = Number(document.getElementById("pageSizeYear").value);
+    pageYear = 1;
+    paginateYearTable();
+}
+
+function handleExcelPaste(event, startInput) {
+    event.preventDefault();
+
+    const text = event.clipboardData.getData("text");
+
+    if (!text) return;
+
+    const rows = text
+        .trim()
+        .split(/\r?\n/)
+        .map(row => row.split(/\t/));
+
+    const startRow = Number(startInput.dataset.row);
+    const startCol = Number(startInput.dataset.col);
+
+    rows.forEach((rowValues, rowOffset) => {
+        rowValues.forEach((value, colOffset) => {
+            const target = document.querySelector(
+                `.excel-paste-cell[data-row="${startRow + rowOffset}"][data-col="${startCol + colOffset}"]`
+            );
+
+            if (!target) return;
+
+            const normalizedValue = value
+                .replace(/\s/g, "")
+                .replace(",", ".");
+
+            if (normalizedValue === "" || isNaN(Number(normalizedValue))) return;
+
+            target.value = normalizedValue;
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("pageSizeYear").value = "300";
+    paginateYearTable();
+    const tableWrap = document.querySelector(".forecast-table-wrap");
+
+if (tableWrap) {
+    tableWrap.scrollTop = 0;
+}
+});
+</script>
+{% endblock %}
