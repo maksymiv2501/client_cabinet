@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 
-from client_cabinet.services.user_service import get_my_data
-
+from client_cabinet.services.payment_service import get_payments_data
 my_data_bp = Blueprint("my_data", __name__)
 
 

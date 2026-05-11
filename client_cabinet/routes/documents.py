@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 
-from client_cabinet.services.user_service import get_documents_data
+from client_cabinet.services.document_service import get_documents_data
 
 documents_bp = Blueprint(
     "documents",
