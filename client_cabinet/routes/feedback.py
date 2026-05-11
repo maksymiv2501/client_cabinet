@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 
-from services.feedback_service import get_feedback_data
+from client_cabinet.services.user_service import get_feedback_data
 
 feedback_bp = Blueprint("feedback", __name__)
 

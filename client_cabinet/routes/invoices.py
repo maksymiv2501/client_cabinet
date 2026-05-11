@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 
-from services.invoice_service import get_invoices_data
+from client_cabinet.services.user_service import get_invoices_data
 
 invoices_bp = Blueprint("invoices", __name__)
 

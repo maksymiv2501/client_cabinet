@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from services.user_service import authenticate_user
+from client_cabinet.services.user_service import authenticate_user
 
 auth_bp = Blueprint("auth", __name__)
 

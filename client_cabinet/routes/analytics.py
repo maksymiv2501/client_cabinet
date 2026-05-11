@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 
-from services.analytics_service import get_analytics_data
+from client_cabinet.services.user_service import get_analytics_data
 
 analytics_bp = Blueprint("analytics", __name__)
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, session
 
-from services.dashboard_service import get_dashboard_data
+from client_cabinet.services.user_service import get_dashboard_data
 
 dashboard_bp = Blueprint("dashboard", __name__)
 

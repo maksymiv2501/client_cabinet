@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for
 
-from services.forecast_service import (
+from client_cabinet.services.user_service import (
     get_current_correction_data,
     get_next_month_plan_data,
     get_next_year_plan_data,
