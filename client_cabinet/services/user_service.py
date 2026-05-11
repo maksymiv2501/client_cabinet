@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import get_connection
+from client_cabinet.database.db import get_connection
 
 
 def create_test_admin():
