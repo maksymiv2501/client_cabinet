@@ -1,20 +1,19 @@
-from flask import Flask, render_template
-from flask import Flask, redirect, url_for 
+from flask import Flask, redirect, url_for
 
-from config import Config
-from database.db import init_db
-from services.user_service import create_test_admin
+from client_cabinet.config import Config
+from client_cabinet.database.db import init_db
+from client_cabinet.services.user_service import create_test_admin
 
-from routes.auth import auth_bp
-from routes.dashboard import dashboard_bp
-from routes.my_data import my_data_bp
-from routes.analytics import analytics_bp
-from routes.invoices import invoices_bp
-from routes.payments import payments_bp
-from routes.forecast import forecast_bp
-from routes.feedback import feedback_bp
-from routes.contacts import contacts_bp
-from routes.documents import documents_bp
+from client_cabinet.routes.auth import auth_bp
+from client_cabinet.routes.dashboard import dashboard_bp
+from client_cabinet.routes.my_data import my_data_bp
+from client_cabinet.routes.analytics import analytics_bp
+from client_cabinet.routes.invoices import invoices_bp
+from client_cabinet.routes.payments import payments_bp
+from client_cabinet.routes.forecast import forecast_bp
+from client_cabinet.routes.feedback import feedback_bp
+from client_cabinet.routes.contacts import contacts_bp
+from client_cabinet.routes.documents import documents_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
