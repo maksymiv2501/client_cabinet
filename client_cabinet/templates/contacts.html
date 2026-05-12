@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
+{% from "components/page_hero.html" import page_hero %}
+
 {% block title %}Контакти{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Контакти</h1>
-    <p>
-        Контактні особи, реквізити постачальника та канали для отримання документів
-    </p>
-</div>
-{% endblock %}
+{{ page_hero(
+    "Контакти",
+    "Контактні особи, реквізити постачальника та канали для отримання документів"
+) }}
+{% endblock %} 
 
 {% block content %}
 

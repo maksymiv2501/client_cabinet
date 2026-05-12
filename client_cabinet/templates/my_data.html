@@ -1,86 +1,68 @@
 {% extends "base.html" %}
 
+{% from "components/page_hero.html" import page_hero %}
+
 {% block title %}Мої дані{% endblock %}
 
 {% block page_header %}
-<div class="client-hero">
-    <div>
-        <div class="breadcrumbs">Мої дані <span>›</span> Дані споживача</div>
-        <div class="client-title-row">
-            <h1>{{ data.consumer.name }}</h1>
+{{ page_hero(
+    "Мої дані",
+    "Інформація про споживача, договори та точки обліку"
+) }}
+{% endblock %} 
+
+{% block content %}
+    <div class="client-header">
+    <div class="client-header-left">
+        <div>
+            <p class="client-name">{{ data.consumer.name }}</p>
             <span class="client-status">Активний споживач</span>
         </div>
-        <div class="client-meta">
-            <div>
-                <span>ЄДРПОУ</span>
-                <strong>{{ data.consumer.edrpou }}</strong>
-            </div>
-            <div>
-                <span>Тип споживача</span>
-                <strong>Юридична особа</strong>
-            </div>
-        </div>
     </div>
-
-    <div class="client-kpi-grid">
-        <div class="summary-card kpi-card">
-            <div>
-                <span>Договорів</span>
-                <strong>{{ data.contracts|length }}</strong>
-                <small>з них активних: {{ data.contracts | selectattr('status', 'equalto', 'Активний') | list | length }}</small>
-            </div>
+    <div class="client-meta">
+        <div class="client-meta-item">
+            <span>ЄДРПОУ</span>
+            <strong>{{ data.consumer.edrpou }}</strong>
         </div>
-
-        <div class="summary-card kpi-card">
-            <div>
-                <span>Активних ТКО</span>
-                <strong>{{ data.contracts | map(attribute='active_tko_count') | sum }}</strong>
-                <small>за активними договорами</small>
-            </div>
-        </div>
-
-        <div class="summary-card kpi-card">
-            <div>
-                <span>Точок комерційного обліку</span>
-                <strong>
-                    {% set ns = namespace(total=0) %}
-                    {% for contract in data.contracts %}
-                        {% for tko in contract.metering_points %}
-                            {% set ns.total = ns.total + 1 %}
-                        {% endfor %}
-                    {% endfor %}
-                    {{ ns.total }}
-                </strong>
-                <small>усього в кабінеті</small>
-            </div>
+        <div class="client-meta-item">
+            <span>Тип споживача</span>
+            <strong>Юридична особа</strong>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block content %}
-
-<div class="readonly-note">Дані доступні лише для перегляду. Для внесення змін зверніться до відповідального менеджера.</div>
-
+<div class="client-kpi-grid">
+    <div class="kpi-card">
+        <span>Договорів</span>
+        <strong>{{ data.contracts|length }}</strong>
+        <small>з них активних: {{ data.contracts | selectattr('status', 'equalto', 'Активний') | list | length }}</small>
+    </div>
+    <div class="kpi-card">
+        <span>Активних ТКО</span>
+        <strong>{{ data.contracts | map(attribute='active_tko_count') | sum }}</strong>
+        <small>за активними договорами</small>
+    </div>
+    <div class="kpi-card">
+        <span>Точок обліку</span>
+        <strong>{% set ns = namespace(total=0) %}{% for c in data.contracts %}{% for t in c.metering_points %}{% set ns.total = ns.total + 1 %}{% endfor %}{% endfor %}{{ ns.total }}</strong>
+        <small>усього в кабінеті</small>
+    </div>
+</div>
 <div class="registry-two-column">
+
     <section class="panel registry-panel">
-        <div class="section-header section-header-icon">
+        <div class="section-header">
             <div>
                 <h2>Адресні дані</h2>
                 <span class="muted">Юридична, поштова та інші адреси споживача</span>
             </div>
         </div>
 
-        <table class="registry-table compact-table">
+        <table class="registry-table compact-table info-table-desktop">
             <thead>
                 <tr>
-                    <th>Тип адреси</th>
-                    <th>Вулиця</th>
-                    <th>Будинок</th>
-                    <th>Квартира/офіс</th>
-                    <th>Індекс</th>
-                    <th>Місто</th>
-                    <th>Країна</th>
+                    <th>Тип адреси</th><th>Вулиця</th><th>Будинок</th>
+                    <th>Квартира/офіс</th><th>Індекс</th><th>Місто</th><th>Країна</th>
                 </tr>
             </thead>
             <tbody>
@@ -104,37 +86,64 @@
                 </tr>
             </tbody>
         </table>
+
+        <div class="info-cards-mobile">
+            {% for addr_type, addr in [('Юридична', data.consumer.legal_address), ('Поштова', data.consumer.postal_address)] %}
+            <div class="info-card">
+                <div class="info-card-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 21s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                    <span>{{ addr_type }}</span>
+                </div>
+                <div class="info-row"><span>Вулиця</span><span>{{ addr.street }}, {{ addr.building }}</span></div>
+                <div class="info-row"><span>Квартира/офіс</span><span>{{ addr.office }}</span></div>
+                <div class="info-row"><span>Місто</span><span>{{ addr.city }}, {{ addr.index }}</span></div>
+                <div class="info-row"><span>Країна</span><span>{{ addr.country }}</span></div>
+            </div>
+            {% endfor %}
+        </div>
     </section>
 
     <section class="panel registry-panel">
-        <div class="section-header section-header-icon">
+        <div class="section-header">
             <div>
                 <h2>Банківські рахунки</h2>
                 <span class="muted">Банківські реквізити споживача</span>
             </div>
         </div>
 
-        <table class="registry-table compact-table">
+        <table class="registry-table compact-table info-table-desktop">
             <thead>
                 <tr>
-                    <th>Призначення</th>
-                    <th>Банк</th>
-                    <th>МФО</th>
-                    <th>IBAN</th>
+                    <th>Призначення</th><th>Банк</th><th>МФО</th><th>IBAN</th>
                 </tr>
             </thead>
             <tbody>
                 {% for account in data.bank_accounts %}
-                    <tr>
-                        <td>{{ account.purpose }}</td>
-                        <td>{{ account.bank }}</td>
-                        <td>{{ account.mfo }}</td>
-                        <td><strong>{{ account.iban }}</strong></td>
-                    </tr>
+                <tr>
+                    <td>{{ account.purpose }}</td>
+                    <td>{{ account.bank }}</td>
+                    <td>{{ account.mfo }}</td>
+                    <td><strong>{{ account.iban }}</strong></td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <div class="info-cards-mobile">
+            {% for account in data.bank_accounts %}
+            <div class="info-card">
+                <div class="info-card-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+                    <span>{{ account.purpose }}</span>
+                </div>
+                <div class="info-row"><span>Банк</span><span>{{ account.bank }}</span></div>
+                <div class="info-row"><span>МФО</span><span>{{ account.mfo }}</span></div>
+                <div class="info-row iban-row"><span>IBAN</span><span class="iban">{{ account.iban }}</span></div>
+            </div>
+            {% endfor %}
+        </div>
     </section>
+
 </div>
 
 <section class="panel registry-panel mt">
@@ -172,7 +181,9 @@
                     <td>{{ contract.manager.name }}</td>
                     <td>{{ contract.manager.phone }}</td>
                     <td>{{ contract.manager.email }}</td>
-                    <td><span class="readonly-pill">{{ contract.note }}</span></td>
+                    <td>
+                    <input class="registry-note" value="{{ contract.note }}" placeholder="Додати примітку">
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -189,14 +200,14 @@
         </div>
 
         <div class="registry-toolbar">
-            <input id="tkoSearch" type="text" placeholder="Пошук за EIC, назвою або адресою" oninput="filterMyDataTko()">
-            <select id="tkoContractFilter" onchange="filterMyDataTko()">
+            <input id="tkoSearch" type="text" placeholder="Пошук за EIC, назвою або адресою" oninput="tkoUpdate()">
+            <select id="tkoContractFilter" onchange="tkoUpdate()">
                 <option value="">Всі договори</option>
                 {% for contract in data.contracts %}
                     <option value="{{ contract.number }}">{{ contract.number }}</option>
                 {% endfor %}
             </select>
-            <select id="tkoStatusFilter" onchange="filterMyDataTko()">
+            <select id="tkoStatusFilter" onchange="tkoUpdate()">
                 <option value="">Всі статуси</option>
                 <option value="Активна">Активна</option>
                 <option value="Неактивна">Неактивна</option>
@@ -231,7 +242,9 @@
                             <td>
                                 <span class="badge {% if tko.status == 'Активна' %}success{% else %}neutral{% endif %}">{{ tko.status }}</span>
                             </td>
-                            <td><span class="readonly-pill">{{ tko.note }}</span></td>
+                           <td>
+                            <input class="registry-note" value="{{ tko.note }}" placeholder="Додати примітку">
+                          </td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
@@ -239,32 +252,80 @@
         </tbody>
     </table>
 
-    <div class="registry-footer" id="tkoResultCount">Показано 1–4 з 4</div>
+    <div class="registry-footer" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+    <span id="tkoCount"></span>
+    <div style="display:flex; align-items:center; gap:8px;">
+        <label style="font-size:13px; color:#94a3b8;">Рядків на сторінці:</label>
+        <select id="tkoPageSize" onchange="tkoUpdate()" style="height:32px; padding:0 10px; border:1px solid #e2e6ea; border-radius:8px; font-size:13px; font-weight:700; background:#fff; color:#344054; outline:none;">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="300">300</option>
+            <option value="600">600</option>
+        </select>
+    </div>
+    <div id="tkoPagination" style="display:flex; gap:4px;"></div>
+</div>
 </section>
 
 <script>
-function filterMyDataTko() {
+const TKO_PER_PAGE = () => Number(document.getElementById("tkoPageSize")?.value || 50);
+let tkoPage = 1;
+
+function tkoUpdate() {
+    tkoPage = 1;
+    tkoRender();
+}
+
+function tkoRender() {
+    const perPage = TKO_PER_PAGE();
     const search = (document.getElementById("tkoSearch")?.value || "").toLowerCase().trim();
     const contract = document.getElementById("tkoContractFilter")?.value || "";
     const status = document.getElementById("tkoStatusFilter")?.value || "";
-    const rows = document.querySelectorAll(".tko-row");
-    let visible = 0;
+    const rows = [...document.querySelectorAll(".tko-row")];
 
-    rows.forEach(function(row) {
-        const rowText = (row.dataset.search || row.textContent || "").toLowerCase();
-        const matchesSearch = !search || rowText.includes(search);
-        const matchesContract = !contract || row.dataset.contract === contract;
-        const matchesStatus = !status || row.dataset.status === status;
-        const show = matchesSearch && matchesContract && matchesStatus;
-        row.style.display = show ? "" : "none";
-        if (show) visible += 1;
+    const filtered = rows.filter(row => {
+        const text = (row.dataset.search || "").toLowerCase();
+        return (!search || text.includes(search))
+            && (!contract || row.dataset.contract === contract)
+            && (!status || row.dataset.status === status);
     });
 
-    const counter = document.getElementById("tkoResultCount");
-    if (counter) {
-        counter.textContent = visible ? `Показано 1–${visible} з ${rows.length}` : `Нічого не знайдено з ${rows.length}`;
-    }
-}
-</script>
+    const total = filtered.length;
+    const pages = Math.max(1, Math.ceil(total / perPage));
+    tkoPage = Math.min(tkoPage, pages);
+    const start = (tkoPage - 1) * perPage;
+    const end = start + perPage;
 
+    rows.forEach(r => r.style.display = "none");
+    filtered.forEach((r, i) => r.style.display = (i >= start && i < end) ? "" : "none");
+
+    document.getElementById("tkoCount").textContent =
+        total ? `Показано ${start + 1}–${Math.min(end, total)} з ${total}` : "Нічого не знайдено";
+
+    const pag = document.getElementById("tkoPagination");
+    pag.innerHTML = "";
+    if (pages <= 1) return;
+
+    const btn = (label, page, active, disabled) => {
+        const b = document.createElement("button");
+        b.textContent = label;
+        b.style.cssText = `padding:5px 10px; border-radius:8px; border:1px solid ${active ? "#84bd00" : "#e2e6ea"}; background:${active ? "#84bd00" : "#fff"}; color:${active ? "#fff" : "#344054"}; font-weight:700; font-size:13px; cursor:${disabled ? "default" : "pointer"}; opacity:${disabled ? ".4" : "1"}`;
+        if (!disabled) b.onclick = () => { tkoPage = page; tkoRender(); };
+        return b;
+    };
+
+    pag.appendChild(btn("←", tkoPage - 1, false, tkoPage === 1));
+    for (let p = 1; p <= pages; p++) {
+        if (pages > 7 && p > 2 && p < pages - 1 && Math.abs(p - tkoPage) > 1) {
+            if (p === 3 || p === pages - 2) { const d = document.createElement("span"); d.textContent = "…"; d.style.padding = "5px 4px"; pag.appendChild(d); }
+            continue;
+        }
+        pag.appendChild(btn(p, p, p === tkoPage, false));
+    }
+    pag.appendChild(btn("→", tkoPage + 1, false, tkoPage === pages));
+}
+
+document.addEventListener("DOMContentLoaded", tkoRender);
+</script>
 {% endblock %}

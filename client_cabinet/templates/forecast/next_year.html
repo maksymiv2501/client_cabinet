@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
+{% from "components/page_hero.html" import page_hero %}
+
 {% block title %}Планові обсяги наступного року{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Планові обсяги наступного року</h1>
-    <p>Подання річного помісячного плану споживання на {{ data["year"] }} рік</p>
-</div>
-{% endblock %}
+{{ page_hero(
+    "Планові обсяги наступного року",
+    "Подання річного помісячного плану споживання на наступпний рік"
+) }}
+{% endblock %} 
 
 {% block content %}
 

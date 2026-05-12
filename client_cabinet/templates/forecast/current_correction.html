@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
+{% from "components/page_hero.html" import page_hero %}
+
 {% block title %}Уточнення споживання протягом місяця{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Уточнення споживання протягом місяця</h1>
-    <p>Коригування поточного місяця в межах часових воріт та допустимих відхилень</p>
-</div>
-{% endblock %}
+{{ page_hero(
+    "Уточнення споживання протягом місяця",
+    "Коригування поточного місяця в межах часових воріт та допустимих відхилень"
+) }}
+{% endblock %} 
 
 {% block content %}
 <div class="forecast-nav-clean">

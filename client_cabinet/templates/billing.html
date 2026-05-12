@@ -10,6 +10,8 @@
 ) }}
 {% endblock %}
 
+{# ===== МАКРОСИ ===== #}
+
 {% macro payments_block(invoice) %}
 <section class="invoice-section">
     <h3>Прикріплені оплати</h3>
@@ -17,8 +19,10 @@
         <table class="registry-table compact-table">
             <thead>
                 <tr>
-                    <th>Номер оплати</th><th>Дата оплати</th>
-                    <th>Повна сума оплати</th><th>Сума оплати рахунку</th>
+                    <th>Номер оплати</th>
+                    <th>Дата оплати</th>
+                    <th>Повна сума оплати</th>
+                    <th>Сума оплати рахунку</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,7 +65,9 @@
                 <td>
                     {% if item.details_by_tko %}
                         <button type="button" class="detail-btn" onclick="togglePositionDetails(this)">Показати</button>
-                    {% else %}<span class="muted">—</span>{% endif %}
+                    {% else %}
+                        <span class="muted">—</span>
+                    {% endif %}
                 </td>
             </tr>
             {% if item.details_by_tko %}
@@ -79,7 +85,9 @@
                             <tbody>
                                 {% for d in item.details_by_tko %}
                                 <tr>
-                                    <td>{{ d.eic }}</td><td>{{ d.address }}</td><td>{{ d.payment_type }}</td>
+                                    <td>{{ d.eic }}</td>
+                                    <td>{{ d.address }}</td>
+                                    <td>{{ d.payment_type }}</td>
                                     <td>{{ "{:,.0f}".format(d.quantity).replace(",", " ") }}</td>
                                     <td>{{ "{:,.4f}".format(d.price).replace(",", " ") }}</td>
                                     <td><strong>{{ "{:,.2f}".format(d.amount).replace(",", " ") }} грн</strong></td>
@@ -99,6 +107,7 @@
 
 {% macro invoice_modal(invoice, period_label) %}
 <div id="invoice-{{ invoice.number }}" class="invoice-modal-window hidden" data-title="{{ invoice.number }}">
+
     <div class="invoice-modal-top">
         <div>
             <div class="invoice-period-label">{{ period_label }}</div>
@@ -110,12 +119,12 @@
             <div class="invoice-modal-badges">
                 {% if invoice.paid %}
                     <span class="badge success">Оплачено</span>
-                {% elif invoice.payments %}
-                    <span class="badge warning">Частково оплачено</span>
                 {% else %}
-                    <span class="badge danger">Не оплачено</span>
+                    <span class="badge warning">Частково оплачено</span>
                 {% endif %}
-                {% if invoice.overdue %}<span class="badge danger">Протерміновано</span>{% endif %}
+                {% if invoice.overdue %}
+                    <span class="badge danger">Протерміновано</span>
+                {% endif %}
             </div>
         </div>
         <div class="modal-controls">
@@ -125,7 +134,8 @@
         </div>
     </div>
 
-    <div class="invoice-modal-body" id="body-{{ invoice.number }}">
+    <div class="invoice-modal-body">
+
         <section class="invoice-section">
             <h3>Основні дані рахунку</h3>
             <div class="details-grid">
@@ -164,6 +174,7 @@
                 </div>
             </div>
         </section>
+
         <section class="calculation-result-card">
             <div>
                 <span>Результат розрахунку</span>
@@ -192,7 +203,7 @@
                     <div>{{ "{:,.2f}".format(adv.amount).replace(",", " ") }} грн</div>
                     <div>{{ "{:,.2f}".format(adv.paid_amount).replace(",", " ") }} грн оплачено</div>
                     <div><span class="badge success">Оплачено</span></div>
-                    <div><button type="button" class="pdf-btn" onclick="printInvoiceModal('invoice-{{ invoice.number }}', '{{ invoice.number }}')">PDF</button></div>
+                    <div><a class="pdf-btn" href="{{ adv.pdf_url }}">PDF</a></div>
                 </div>
                 {% endfor %}
             </div>
@@ -200,23 +211,14 @@
         {% endif %}
 
         {{ positions_block(invoice) }}
+
     </div>
 </div>
 {% endmacro %}
 
 {% block content %}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-<style>
-.flatpickr-input { cursor: pointer; }
-.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange {
-    background: #84bd00 !important; border-color: #84bd00 !important; color: #1a2e00 !important;
-}
-.flatpickr-day.inRange { background: #eef8d9 !important; border-color: #eef8d9 !important; }
-.flatpickr-day:hover { background: #eef8d9 !important; }
-</style>
 
 <div class="dashboard-page">
 
@@ -228,7 +230,7 @@
 
     {# ===== РАХУНКИ ===== #}
     <section class="panel registry-panel">
-        <div class="section-header">
+        <div class="section-header section-header-with-toolbar">
             <div>
                 <h2>Рахунки</h2>
                 <span class="muted">Детальна інформація відкривається у модальному вікні з рядка рахунку</span>
@@ -236,46 +238,36 @@
         </div>
 
         <div class="billing-filters">
-            <input type="text" id="invDateRange" placeholder="Діапазон дат" readonly>
+            <input type="month" id="invDateFrom" onchange="invoiceUpdate()">
+            <span class="filter-sep">—</span>
+            <input type="month" id="invDateTo" onchange="invoiceUpdate()">
             <select id="invContract" onchange="invoiceUpdate()">
                 <option value="">Всі договори</option>
-                {% set seen = [] %}
                 {% for period in data.invoice_periods %}
                     {% if period.has_actual %}
-                        {% if period.actual_invoice.contract not in seen %}
-                            <option value="{{ period.actual_invoice.contract }}">{{ period.actual_invoice.contract }}</option>
-                            {% if seen.append(period.actual_invoice.contract) %}{% endif %}
-                        {% endif %}
+                        <option>{{ period.actual_invoice.contract }}</option>
                     {% else %}
                         {% for inv in period.advance_invoices %}
-                            {% if inv.contract not in seen %}
-                                <option value="{{ inv.contract }}">{{ inv.contract }}</option>
-                                {% if seen.append(inv.contract) %}{% endif %}
-                            {% endif %}
+                            <option>{{ inv.contract }}</option>
                         {% endfor %}
                     {% endif %}
                 {% endfor %}
             </select>
             <select id="invSubject" onchange="invoiceUpdate()">
                 <option value="">Всі предмети оплати</option>
-                <option value="Споживання е/е">Споживання е/е</option>
-                <option value="Пеня">Пеня</option>
+                <option>Споживання е/е</option>
+                <option>Пеня</option>
             </select>
-            <select id="invPayStatus" onchange="invoiceUpdate()">
-                <option value="">Статус оплати</option>
+            <select id="invStatus" onchange="invoiceUpdate()">
+                <option value="">Всі статуси</option>
                 <option value="paid">Оплачено</option>
-                <option value="partial">Частково оплачено</option>
                 <option value="unpaid">Не оплачено</option>
-            </select>
-            <select id="invOverdue" onchange="invoiceUpdate()">
-                <option value="">Протерміновано</option>
-                <option value="yes">Так</option>
-                <option value="no">Ні</option>
+                <option value="overdue">Протерміновано</option>
             </select>
             <select id="invType" onchange="invoiceUpdate()">
                 <option value="">Всі типи</option>
-                <option value="Аванс">Аванс</option>
-                <option value="За фактичне споживання">За фактичне споживання</option>
+                <option>Аванс</option>
+                <option>За фактичне споживання</option>
             </select>
         </div>
 
@@ -283,23 +275,28 @@
             <table class="registry-table">
                 <thead>
                     <tr>
-                        <th>Предмет оплати</th><th>Номер рахунку</th><th>Тип</th>
-                        <th>Договір</th><th>Період</th><th>Сплатити до</th>
-                        <th>Сума з ПДВ, грн</th><th>Оплачено</th><th>Протерміновано</th><th>Дії</th>
+                        <th>Предмет оплати</th>
+                        <th>Номер рахунку</th>
+                        <th>Тип</th>
+                        <th>Договір</th>
+                        <th>Період</th>
+                        <th>Сплатити до</th>
+                        <th>Сума з ПДВ, грн</th>
+                        <th>Оплачено</th>
+                        <th>Протерміновано</th>
+                        <th>Дії</th>
                     </tr>
                 </thead>
                 <tbody id="invTbody">
                     {% for period in data.invoice_periods %}
                         {% if period.has_actual %}
                             {% set inv = period.actual_invoice %}
-                            {% set pay_status = 'paid' if inv.paid else ('partial' if inv.payments else 'unpaid') %}
                             <tr class="inv-row row-attention"
-                                data-due="{{ inv.due_date }}"
                                 data-contract="{{ inv.contract }}"
                                 data-subject="{{ inv.subject }}"
                                 data-type="{{ inv.type }}"
-                                data-pay="{{ pay_status }}"
-                                data-overdue="{{ 'yes' if inv.overdue else 'no' }}">
+                                data-paid="{{ 'paid' if inv.paid else 'unpaid' }}"
+                                data-overdue="{{ 'overdue' if inv.overdue else '' }}">
                                 <td>{{ inv.subject }}</td>
                                 <td><strong>{{ inv.number }}</strong>{% if inv.is_new %}<span class="new-dot">new</span>{% endif %}</td>
                                 <td>{{ inv.type }}</td>
@@ -307,18 +304,11 @@
                                 <td>{{ period.period }}</td>
                                 <td>{{ inv.due_date }}</td>
                                 <td><strong>{{ "{:,.2f}".format(inv.amount).replace(",", " ") }} грн</strong></td>
-                                <td>
-                                    {% if inv.paid %}<span class="badge success">Оплачено</span>
-                                    {% elif inv.payments %}<span class="badge warning">Частково</span>
-                                    {% else %}<span class="badge danger">Не оплачено</span>{% endif %}
-                                </td>
-                                <td>
-                                    {% if inv.overdue %}<span class="badge danger">Так</span>
-                                    {% else %}<span class="badge success">Ні</span>{% endif %}
-                                </td>
+                                <td>{% if inv.paid %}<span class="badge success">Оплачено</span>{% else %}<span class="badge warning">Ні</span>{% endif %}</td>
+                                <td>{% if inv.overdue %}<span class="badge danger">Так</span>{% else %}<span class="badge success">Ні</span>{% endif %}</td>
                                 <td>
                                     <div class="row-actions">
-                                        <button type="button" class="pdf-btn" onclick="printInvoiceModal('invoice-{{ inv.number }}', '{{ inv.number }}')">PDF</button>
+                                        <a class="pdf-btn" href="{{ inv.pdf_url }}">PDF</a>
                                         <button type="button" class="detail-btn" onclick="openInvoiceModal('invoice-{{ inv.number }}')">Деталі</button>
                                         <button type="button" class="xlsx-btn" onclick="exportInvoiceXlsx('invoice-{{ inv.number }}', '{{ inv.number }}')">XLSX</button>
                                     </div>
@@ -326,14 +316,12 @@
                             </tr>
                         {% else %}
                             {% for inv in period.advance_invoices %}
-                            {% set pay_status = 'paid' if inv.paid else ('partial' if inv.payments else 'unpaid') %}
                             <tr class="inv-row {% if not inv.paid %}row-attention{% endif %}"
-                                data-due="{{ inv.due_date }}"
                                 data-contract="{{ inv.contract }}"
                                 data-subject="{{ inv.subject }}"
                                 data-type="{{ inv.type }}"
-                                data-pay="{{ pay_status }}"
-                                data-overdue="{{ 'yes' if inv.overdue else 'no' }}">
+                                data-paid="{{ 'paid' if inv.paid else 'unpaid' }}"
+                                data-overdue="{{ 'overdue' if inv.overdue else '' }}">
                                 <td>{{ inv.subject }}</td>
                                 <td><strong>{{ inv.number }}</strong>{% if inv.is_new %}<span class="new-dot">new</span>{% endif %}</td>
                                 <td>{{ inv.type }}</td>
@@ -341,18 +329,11 @@
                                 <td>{{ period.period }}</td>
                                 <td>{{ inv.due_date }}</td>
                                 <td><strong>{{ "{:,.2f}".format(inv.amount).replace(",", " ") }} грн</strong></td>
-                                <td>
-                                    {% if inv.paid %}<span class="badge success">Оплачено</span>
-                                    {% elif inv.payments %}<span class="badge warning">Частково</span>
-                                    {% else %}<span class="badge danger">Не оплачено</span>{% endif %}
-                                </td>
-                                <td>
-                                    {% if inv.overdue %}<span class="badge danger">Так</span>
-                                    {% else %}<span class="badge success">Ні</span>{% endif %}
-                                </td>
+                                <td>{% if inv.paid %}<span class="badge success">Оплачено</span>{% else %}<span class="badge warning">Ні</span>{% endif %}</td>
+                                <td>{% if inv.overdue %}<span class="badge danger">Так</span>{% else %}<span class="badge success">Ні</span>{% endif %}</td>
                                 <td>
                                     <div class="row-actions">
-                                        <button type="button" class="pdf-btn" onclick="printInvoiceModal('invoice-{{ inv.number }}', '{{ inv.number }}')">PDF</button>
+                                        <a class="pdf-btn" href="{{ inv.pdf_url }}">PDF</a>
                                         <button type="button" class="detail-btn" onclick="openInvoiceModal('invoice-{{ inv.number }}')">Деталі</button>
                                     </div>
                                 </td>
@@ -369,8 +350,11 @@
             <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:13px;color:#94a3b8;">Рядків:</label>
                 <select id="invPageSize" onchange="invoiceUpdate()" style="height:32px;padding:0 10px;border:1px solid #e2e6ea;border-radius:8px;font-size:13px;font-weight:700;background:#fff;color:#344054;outline:none;">
-                    <option value="25" selected>25</option><option value="50">50</option>
-                    <option value="100">100</option><option value="300">300</option><option value="600">600</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="300">300</option>
+                    <option value="600">600</option>
                 </select>
             </div>
             <div id="invPagination" style="display:flex;gap:4px;"></div>
@@ -387,11 +371,13 @@
         </div>
 
         <div class="billing-filters">
-            <input type="text" id="actDateRange" placeholder="Діапазон дат" readonly>
+            <input type="month" id="actDateFrom" onchange="actUpdate()">
+            <span class="filter-sep">—</span>
+            <input type="month" id="actDateTo" onchange="actUpdate()">
             <select id="actContract" onchange="actUpdate()">
                 <option value="">Всі договори</option>
                 {% for act in data.acts %}
-                    <option value="{{ act.contract }}">{{ act.contract }}</option>
+                    <option>{{ act.contract }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -400,16 +386,19 @@
             <table class="registry-table">
                 <thead>
                     <tr>
-                        <th>Предмет оплати</th><th>Номер акту</th><th>Договір</th>
-                        <th>Період</th><th>Дата акту</th><th>Кількість, кВт·год</th>
-                        <th>Сума з ПДВ, грн</th><th>Дії</th>
+                        <th>Предмет оплати</th>
+                        <th>Номер акту</th>
+                        <th>Договір</th>
+                        <th>Період</th>
+                        <th>Дата акту</th>
+                        <th>Кількість, кВт·год</th>
+                        <th>Сума з ПДВ, грн</th>
+                        <th>Дії</th>
                     </tr>
                 </thead>
                 <tbody id="actTbody">
                     {% for act in data.acts %}
-                    <tr class="act-row"
-                        data-due="{{ act.act_date }}"
-                        data-contract="{{ act.contract }}">
+                    <tr class="act-row" data-contract="{{ act.contract }}">
                         <td>{{ act.subject }}</td>
                         <td><strong>{{ act.number }}</strong>{% if act.is_new %}<span class="new-dot">new</span>{% endif %}</td>
                         <td>{{ act.contract }}</td>
@@ -419,7 +408,7 @@
                         <td><strong>{{ "{:,.2f}".format(act.amount).replace(",", " ") }} грн</strong></td>
                         <td>
                             <div class="row-actions">
-                                <button type="button" class="pdf-btn" onclick="printActPdf('{{ act.pdf_url }}', '{{ act.number }}')">PDF</button>
+                                <a class="pdf-btn" href="{{ act.pdf_url }}">PDF</a>
                             </div>
                         </td>
                     </tr>
@@ -433,8 +422,11 @@
             <div style="display:flex;align-items:center;gap:8px;">
                 <label style="font-size:13px;color:#94a3b8;">Рядків:</label>
                 <select id="actPageSize" onchange="actUpdate()" style="height:32px;padding:0 10px;border:1px solid #e2e6ea;border-radius:8px;font-size:13px;font-weight:700;background:#fff;color:#344054;outline:none;">
-                    <option value="25" selected>25</option><option value="50">50</option>
-                    <option value="100">100</option><option value="300">300</option><option value="600">600</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="300">300</option>
+                    <option value="600">600</option>
                 </select>
             </div>
             <div id="actPagination" style="display:flex;gap:4px;"></div>
@@ -443,6 +435,7 @@
 
 </div>
 
+{# ===== МОДАЛИ ===== #}
 <div id="invoice-desktop" class="invoice-desktop hidden">
     {% for period in data.invoice_periods %}
         {% if period.has_actual %}
@@ -457,203 +450,230 @@
 
 <div id="minimized-tray" class="minimized-tray"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/uk.js"></script>
-
 <script>
-var invFrom = '', invTo = '', actFrom = '', actTo = '';
+// ===== ПАГІНАЦІЯ =====
 
-function toYM(d) {
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-}
+function makePaginator(rows, pageVar, pageSizeId, countId, pagId) {
+    const perPage = Number(document.getElementById(pageSizeId)?.value || 25);
+    const total = rows.filter(r => r.style.display !== 'none' || true).length;
 
-function parseDue(str) {
-    if (!str || str.length < 10) return '';
-    var p = str.split('.');
-    return p.length === 3 ? p[2]+'-'+p[1] : '';
-}
+    // filter visible
+    const visible = rows.filter(r => r.getAttribute('data-visible') !== 'false');
+    const totalV = visible.length;
+    const pages = Math.max(1, Math.ceil(totalV / perPage));
+    pageVar.p = Math.min(pageVar.p, pages);
+    const start = (pageVar.p - 1) * perPage;
+    const end = start + perPage;
 
-function paginate(rows, pv, szId, cntId, pagId) {
-    var pp = Number(document.getElementById(szId).value || 25);
-    var vis = rows.filter(function(r){ return r.getAttribute('data-visible') !== 'false'; });
-    var tot = vis.length;
-    var pages = Math.max(1, Math.ceil(tot/pp));
-    pv.p = Math.min(pv.p, pages);
-    var s = (pv.p-1)*pp, e = s+pp;
-    rows.forEach(function(r){ r.style.display='none'; });
-    vis.forEach(function(r,i){ r.style.display=(i>=s&&i<e)?'':'none'; });
-    document.getElementById(cntId).textContent = tot
-        ? 'Показано '+(s+1)+'–'+Math.min(e,tot)+' з '+tot
-        : 'Нічого не знайдено';
-    var pg = document.getElementById(pagId);
-    pg.innerHTML = '';
-    if (pages<=1) return;
-    function mkb(lbl,page,act,dis) {
-        var b=document.createElement('button');
-        b.textContent=lbl;
-        b.style.cssText='padding:5px 10px;border-radius:8px;border:1px solid '+(act?'#84bd00':'#e2e6ea')+';background:'+(act?'#84bd00':'#fff')+';color:'+(act?'#1a2e00':'#344054')+';font-weight:700;font-size:13px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?'.4':'1');
-        if(!dis) b.onclick=function(){ pv.p=page; paginate(rows,pv,szId,cntId,pagId); };
+    rows.forEach(r => r.style.display = 'none');
+    visible.forEach((r, i) => r.style.display = (i >= start && i < end) ? '' : 'none');
+
+    document.getElementById(countId).textContent =
+        totalV ? `Показано ${start+1}–${Math.min(end,totalV)} з ${totalV}` : 'Нічого не знайдено';
+
+    const pag = document.getElementById(pagId);
+    pag.innerHTML = '';
+    if (pages <= 1) return;
+
+    const btn = (label, page, active, disabled) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.style.cssText = `padding:5px 10px;border-radius:8px;border:1px solid ${active?'#84bd00':'#e2e6ea'};background:${active?'#84bd00':'#fff'};color:${active?'#1a2e00':'#344054'};font-weight:700;font-size:13px;cursor:${disabled?'default':'pointer'};opacity:${disabled?'.4':'1'}`;
+        if (!disabled) b.onclick = () => { pageVar.p = page; makePaginator(rows, pageVar, pageSizeId, countId, pagId); };
         return b;
-    }
-    pg.appendChild(mkb('←',pv.p-1,false,pv.p===1));
-    for(var p=1;p<=pages;p++){
-        if(pages>7&&p>2&&p<pages-1&&Math.abs(p-pv.p)>1){
-            if(p===3||p===pages-2){var sp=document.createElement('span');sp.textContent='…';sp.style.padding='5px 4px';pg.appendChild(sp);}
+    };
+
+    pag.appendChild(btn('←', pageVar.p - 1, false, pageVar.p === 1));
+    for (let p = 1; p <= pages; p++) {
+        if (pages > 7 && p > 2 && p < pages-1 && Math.abs(p - pageVar.p) > 1) {
+            if (p === 3 || p === pages-2) { const d = document.createElement('span'); d.textContent='…'; d.style.padding='5px 4px'; pag.appendChild(d); }
             continue;
         }
-        pg.appendChild(mkb(p,p,p===pv.p,false));
+        pag.appendChild(btn(p, p, p === pageVar.p, false));
     }
-    pg.appendChild(mkb('→',pv.p+1,false,pv.p===pages));
+    pag.appendChild(btn('→', pageVar.p + 1, false, pageVar.p === pages));
 }
 
-var invPage={p:1}, actPage={p:1};
-function invoiceUpdate(){ invPage.p=1; invoiceRender(); }
-function actUpdate(){ actPage.p=1; actRender(); }
+// ===== ФІЛЬТРИ РАХУНКІВ =====
+
+const invPage = { p: 1 };
+
+function invoiceUpdate() {
+    invPage.p = 1;
+    invoiceRender();
+}
 
 function invoiceRender() {
-    var contract = document.getElementById('invContract').value;
-    var subject  = document.getElementById('invSubject').value;
-    var payStatus= document.getElementById('invPayStatus').value;
-    var overdue  = document.getElementById('invOverdue').value;
-    var type     = document.getElementById('invType').value;
-    var rows = Array.from(document.querySelectorAll('.inv-row'));
+    const contract = document.getElementById('invContract')?.value || '';
+    const subject  = document.getElementById('invSubject')?.value || '';
+    const status   = document.getElementById('invStatus')?.value || '';
+    const type     = document.getElementById('invType')?.value || '';
+    const rows     = [...document.querySelectorAll('.inv-row')];
 
-    rows.forEach(function(r) {
-        var ym = parseDue(r.getAttribute('data-due'));
-        var ok = (!invFrom || ym >= invFrom)
-            && (!invTo   || ym <= invTo)
-            && (!contract || r.getAttribute('data-contract') === contract)
-            && (!subject  || r.getAttribute('data-subject') === subject)
-            && (!type     || r.getAttribute('data-type') === type)
-            && (!payStatus|| r.getAttribute('data-pay') === payStatus)
-            && (!overdue  || r.getAttribute('data-overdue') === overdue);
-        r.setAttribute('data-visible', ok ? 'true' : 'false');
+    rows.forEach(r => {
+        const matchContract = !contract || r.dataset.contract === contract;
+        const matchSubject  = !subject  || r.dataset.subject === subject;
+        const matchType     = !type     || r.dataset.type === type;
+        const matchStatus   = !status   ||
+            (status === 'paid'    && r.dataset.paid === 'paid') ||
+            (status === 'unpaid'  && r.dataset.paid === 'unpaid') ||
+            (status === 'overdue' && r.dataset.overdue === 'overdue');
+        r.setAttribute('data-visible', (matchContract && matchSubject && matchType && matchStatus) ? 'true' : 'false');
     });
-    paginate(rows, invPage, 'invPageSize', 'invCount', 'invPagination');
+
+    makePaginator(rows, invPage, 'invPageSize', 'invCount', 'invPagination');
+}
+
+// ===== ФІЛЬТРИ АКТІВ =====
+
+const actPage = { p: 1 };
+
+function actUpdate() {
+    actPage.p = 1;
+    actRender();
 }
 
 function actRender() {
-    var contract = document.getElementById('actContract').value;
-    var rows = Array.from(document.querySelectorAll('.act-row'));
-    rows.forEach(function(r) {
-        var ym = parseDue(r.getAttribute('data-due'));
-        var ok = (!actFrom || ym >= actFrom)
-            && (!actTo   || ym <= actTo)
-            && (!contract || r.getAttribute('data-contract') === contract);
-        r.setAttribute('data-visible', ok ? 'true' : 'false');
+    const contract = document.getElementById('actContract')?.value || '';
+    const rows = [...document.querySelectorAll('.act-row')];
+
+    rows.forEach(r => {
+        const match = !contract || r.dataset.contract === contract;
+        r.setAttribute('data-visible', match ? 'true' : 'false');
     });
-    paginate(rows, actPage, 'actPageSize', 'actCount', 'actPagination');
+
+    makePaginator(rows, actPage, 'actPageSize', 'actCount', 'actPagination');
 }
 
-function printInvoiceModal(modalId, num) {
-    var body = document.getElementById('body-'+num);
-    if (!body) return;
-    var win = window.open('','_blank','width=900,height=700');
-    win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Рахунок '+num+'</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}.details-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}.details-grid div{border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;background:#f8fafc}.details-grid span{display:block;color:#94a3b8;font-size:11px;margin-bottom:3px}.details-grid strong{display:block;color:#111;font-size:13px}.details-grid-wide{grid-column:span 2}.fact-breakdown-card{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:20px}.fact-line{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f1f5f9;font-size:13px}.fact-line:last-child{border-bottom:0}.calculation-result-card{background:#111;color:#fff;padding:14px 18px;border-radius:10px;margin-bottom:20px;display:flex;justify-content:space-between}.result-positive{color:#9be000}.result-negative{color:#fca5a5}.invoice-section{margin-bottom:20px}h3{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}th{background:#f4f6f8;padding:8px 10px;text-align:left;border-bottom:1px solid #e5e7eb}td{padding:8px 10px;border-bottom:1px solid #f1f5f9}.hidden{display:none}button{display:none}</style></head><body><h2 style="margin:0 0 4px">'+num+'</h2>'+body.innerHTML+'</body></html>');
-    win.document.close(); win.focus();
-    setTimeout(function(){ win.print(); win.close(); }, 600);
-}
+// ===== XLSX EXPORT =====
 
-function printActPdf(url, num) {
-    if (url && url !== '#') { window.open(url,'_blank'); return; }
-    alert('PDF акту '+num+' недоступний у демо-режимі');
-}
-
-function exportInvoiceXlsx(modalId, num) {
-    var modal = document.getElementById(modalId);
+function exportInvoiceXlsx(modalId, invoiceNumber) {
+    const modal = document.getElementById(modalId);
     if (!modal) return;
-    var wb = XLSX.utils.book_new();
-    modal.querySelectorAll('table').forEach(function(t,i){
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(t), 'Аркуш'+(i+1));
+
+    const tables = modal.querySelectorAll('table');
+    const wb = XLSX.utils.book_new();
+
+    tables.forEach((table, i) => {
+        const ws = XLSX.utils.table_to_sheet(table);
+        XLSX.utils.book_append_sheet(wb, ws, 'Аркуш' + (i + 1));
     });
-    XLSX.writeFile(wb, 'invoice_'+num+'.xlsx');
+
+    XLSX.writeFile(wb, 'invoice_' + invoiceNumber + '.xlsx');
 }
 
-var zIdx=1001;
-function syncDesktop(){
-    var d=document.getElementById('invoice-desktop');
-    d.classList.toggle('hidden',!document.querySelector('.invoice-modal-window:not(.hidden)'));
-    document.body.classList.toggle('modal-open',!!document.querySelector('.invoice-modal-window:not(.hidden):not(.is-minimized)'));
-}
-function front(m){ zIdx++; m.style.zIndex=zIdx; }
+// ===== МОДАЛ =====
 
-function openInvoiceModal(id){
-    var m=document.getElementById(id); if(!m) return;
+let modalZIndex = 1001;
+
+function syncInvoiceDesktopVisibility() {
+    const desktop = document.getElementById('invoice-desktop');
+    const hasOpen = document.querySelector('.invoice-modal-window:not(.hidden)');
+    desktop.classList.toggle('hidden', !hasOpen);
+    document.body.classList.toggle('modal-open', !!document.querySelector('.invoice-modal-window:not(.hidden):not(.is-minimized)'));
+}
+
+function bringToFront(modal) { modalZIndex++; modal.style.zIndex = modalZIndex; }
+
+function openInvoiceModal(id) {
+    const desktop = document.getElementById('invoice-desktop');
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    desktop.classList.remove('hidden');
+    modal.classList.remove('hidden', 'is-minimized');
+    bringToFront(modal);
+    removeMinimizedCard(id);
+    syncInvoiceDesktopVisibility();
+}
+
+function closeInvoiceModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('is-minimized', 'is-fullscreen');
+    removeMinimizedCard(id);
+    syncInvoiceDesktopVisibility();
+}
+
+function minimizeInvoiceModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    modal.classList.add('is-minimized');
+    addMinimizedCard(id, modal.dataset.title || id);
+    syncInvoiceDesktopVisibility();
+}
+
+function restoreInvoiceModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
     document.getElementById('invoice-desktop').classList.remove('hidden');
-    m.classList.remove('hidden','is-minimized'); front(m); rmCard(id); syncDesktop();
-}
-function closeInvoiceModal(id){
-    var m=document.getElementById(id); if(!m) return;
-    m.classList.add('hidden'); m.classList.remove('is-minimized','is-fullscreen'); rmCard(id); syncDesktop();
-}
-function minimizeInvoiceModal(id){
-    var m=document.getElementById(id); if(!m) return;
-    m.classList.add('is-minimized'); addCard(id, m.dataset.title||id); syncDesktop();
-}
-function restoreInvoiceModal(id){
-    var m=document.getElementById(id); if(!m) return;
-    document.getElementById('invoice-desktop').classList.remove('hidden');
-    m.classList.remove('is-minimized','hidden'); front(m); rmCard(id); syncDesktop();
-}
-function toggleFullscreenInvoiceModal(id){
-    var m=document.getElementById(id); if(!m) return;
-    m.classList.toggle('is-fullscreen'); front(m);
-}
-function addCard(id,title){
-    var tray=document.getElementById('minimized-tray');
-    if(document.getElementById('min-'+id)) return;
-    var c=document.createElement('button'); c.type='button'; c.id='min-'+id;
-    c.className='minimized-card'; c.textContent=title;
-    c.onclick=function(){ restoreInvoiceModal(id); };
-    tray.appendChild(c);
-}
-function rmCard(id){
-    var c=document.getElementById('min-'+id); if(c) c.remove();
-}
-function togglePositionDetails(btn){
-    var next=btn.closest('tr').nextElementSibling;
-    if(!next||!next.classList.contains('position-details-row')) return;
-    next.classList.toggle('hidden');
-    btn.textContent=next.classList.contains('hidden')?'Показати':'Згорнути';
+    modal.classList.remove('is-minimized', 'hidden');
+    bringToFront(modal);
+    removeMinimizedCard(id);
+    syncInvoiceDesktopVisibility();
 }
 
-document.querySelectorAll('.invoice-modal-window').forEach(function(m){
-    m.addEventListener('mousedown', function(){ front(m); });
-    var h=m.querySelector('.invoice-modal-top');
-    h.addEventListener('mousedown', function(e){
-        if(e.target.closest('button')||m.classList.contains('is-fullscreen')) return;
-        front(m);
-        var r=m.getBoundingClientRect(), dx=e.clientX-r.left, dy=e.clientY-r.top;
-        function mv(me){ m.style.left=(me.clientX-dx)+'px'; m.style.top=(me.clientY-dy)+'px'; m.style.transform='none'; }
-        function up(){ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); }
-        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+function toggleFullscreenInvoiceModal(id) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    modal.classList.toggle('is-fullscreen');
+    bringToFront(modal);
+}
+
+function addMinimizedCard(id, title) {
+    const tray = document.getElementById('minimized-tray');
+    if (document.getElementById('minimized-' + id)) return;
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.id = 'minimized-' + id;
+    card.className = 'minimized-card';
+    card.textContent = title;
+    card.onclick = () => restoreInvoiceModal(id);
+    tray.appendChild(card);
+}
+
+function removeMinimizedCard(id) {
+    const card = document.getElementById('minimized-' + id);
+    if (card) card.remove();
+}
+
+function togglePositionDetails(button) {
+    const row = button.closest('tr');
+    const detailsRow = row.nextElementSibling;
+    if (!detailsRow?.classList.contains('position-details-row')) return;
+    detailsRow.classList.toggle('hidden');
+    button.textContent = detailsRow.classList.contains('hidden') ? 'Показати' : 'Згорнути';
+}
+
+// ===== DRAG =====
+
+document.querySelectorAll('.invoice-modal-window').forEach(modal => {
+    modal.addEventListener('mousedown', () => bringToFront(modal));
+    const header = modal.querySelector('.invoice-modal-top');
+    header.addEventListener('mousedown', e => {
+        if (e.target.closest('button') || modal.classList.contains('is-fullscreen')) return;
+        bringToFront(modal);
+        const rect = modal.getBoundingClientRect();
+        const dx = e.clientX - rect.left, dy = e.clientY - rect.top;
+        const onMove = me => {
+            modal.style.left = (me.clientX - dx) + 'px';
+            modal.style.top  = (me.clientY - dy) + 'px';
+            modal.style.transform = 'none';
+        };
+        const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
     });
 });
 
-document.addEventListener('keydown', function(e){
-    if(e.key!=='Escape') return;
-    var open=Array.from(document.querySelectorAll('.invoice-modal-window:not(.hidden):not(.is-minimized)'))
-        .sort(function(a,b){ return (Number(b.style.zIndex)||0)-(Number(a.style.zIndex)||0); });
-    if(open.length) closeInvoiceModal(open[0].id);
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = [...document.querySelectorAll('.invoice-modal-window:not(.hidden):not(.is-minimized)')]
+        .sort((a,b) => (Number(b.style.zIndex)||0) - (Number(a.style.zIndex)||0));
+    if (open.length) closeInvoiceModal(open[0].id);
 });
 
-document.addEventListener('DOMContentLoaded', function(){
-    flatpickr('#invDateRange', {
-        mode:'range', locale:'uk', dateFormat:'d.m.Y',
-        onChange: function(dates){
-            invFrom = dates[0] ? toYM(dates[0]) : '';
-            invTo   = dates[1] ? toYM(dates[1]) : '';
-            invoiceUpdate();
-        }
-    });
-    flatpickr('#actDateRange', {
-        mode:'range', locale:'uk', dateFormat:'d.m.Y',
-        onChange: function(dates){
-            actFrom = dates[0] ? toYM(dates[0]) : '';
-            actTo   = dates[1] ? toYM(dates[1]) : '';
-            actUpdate();
-        }
-    });
+document.addEventListener('DOMContentLoaded', () => {
     invoiceRender();
     actRender();
 });

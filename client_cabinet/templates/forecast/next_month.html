@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
+{% from "components/page_hero.html" import page_hero %}
+
 {% block title %}Планові обсяги наступного місяця{% endblock %}
 
 {% block page_header %}
-<div class="page-heading">
-    <h1>Планові обсяги наступного місяця</h1>
-    <p>Подання плану споживання перед місяцем постачання</p>
-</div>
-{% endblock %}
+{{ page_hero(
+    "Планові обсяги наступного місяця",
+    "Подання плану споживання перед місяцем постачання"
+) }}
+{% endblock %} 
 
 {% block content %}
 <div class="forecast-nav-clean">

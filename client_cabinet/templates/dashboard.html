@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}Головна{% endblock %}
+{% from "components/page_hero.html" import page_hero %}
+
+{% block title %}Контакти{% endblock %}
 
 {% block page_header %}
-        <h1>Головна панель</h1>
-{% endblock %}
+{{ page_hero(
+    "Головна панель",
+    "Головна панель"
+) }}
+{% endblock %} 
 
 {% block content %}
 

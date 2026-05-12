@@ -4,1177 +4,397 @@
 {% block title %}Оплати{% endblock %}
 
 {% block page_header %}
-{{ page_hero(
-    "Оплати",
-    "Звірка отриманих та рознесених оплат"
-) }}
-{% endblock %} 
-
+{{ page_hero("Оплати", "Звірка отриманих та рознесених оплат") }}
+{% endblock %}
 
 {% block content %}
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
 <style>
-
-    .payments-summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-
-        margin-bottom: 24px;
-    }
-
-    .summary-card {
-        background: #fff;
-
-        border-radius: 16px;
-
-        padding: 18px;
-
-        border: 1px solid #e5e7eb;
-
-        box-shadow:
-            0 8px 24px rgba(15, 23, 42, 0.04);
-    }
-
-    .summary-card-label {
-        color: #64748b;
-
-        font-size: 13px;
-        font-weight: 600;
-
-        margin-bottom: 8px;
-    }
-
-    .summary-card-value {
-        color: #111827;
-
-        font-size: 28px;
-        font-weight: 800;
-    }
-
-    .summary-card.green {
-        border-left: 4px solid #9be000;
-    }
-
-    .summary-card.orange {
-        border-left: 4px solid #f59e0b;
-    }
-
-    .summary-card.red {
-        border-left: 4px solid #ef4444;
-    }
-
-    .summary-card.dark {
-        border-left: 4px solid #111827;
-    }
-
-    .compact-filters {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-
-        align-items: center;
-    }
-
-    .compact-filters input,
-    .compact-filters select {
-        flex: 0 0 auto;
-    }
-
-    .compact-filters .wide-filter {
-        width: 240px;
-    }
-
-    .row-actions {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .payment-modal-window {
-        position: fixed;
-
-        top: 5vh;
-        left: 50%;
-
-        transform: translateX(-50%);
-
-        width: min(1320px, calc(100vw - 48px));
-        height: 88vh;
-
-        background: #fff;
-
-        border-left: 3px solid #9be000;
-
-        border-radius: 16px;
-
-        box-shadow:
-            0 20px 60px rgba(15, 23, 42, 0.28);
-
-        overflow: auto;
-
-        resize: both;
-
-        min-width: 760px;
-        min-height: 520px;
-
-        z-index: 2000;
-    }
-
-    .payment-modal-header {
-        position: sticky;
-
-        top: 0;
-
-        z-index: 50;
-
-        background: #fff;
-
-        border-bottom: 1px solid #e5e7eb;
-
-        display: flex;
-        justify-content: space-between;
-
-        gap: 24px;
-
-        padding: 18px 24px;
-
-        cursor: move;
-    }
-
-    .payment-modal-body {
-        padding: 24px;
-    }
-
-    .payment-modal-title {
-        margin: 0;
-
-        font-size: 24px;
-        font-weight: 800;
-
-        color: #111827;
-    }
-
-    .payment-modal-subtitle {
-        margin-top: 6px;
-
-        color: #64748b;
-    }
-
-    .payment-modal-amount {
-        font-size: 28px;
-        font-weight: 800;
-
-        color: #111827;
-
-        margin-bottom: 10px;
-
-        text-align: right;
-    }
-
-    .modal-controls {
-        position: absolute;
-
-        top: 16px;
-        right: 18px;
-
-        display: flex;
-        gap: 8px;
-    }
-
-    .modal-control-btn {
-        border: 0;
-        background: transparent;
-
-        width: 28px;
-        height: 28px;
-
-        border-radius: 8px;
-
-        cursor: pointer;
-
-        font-size: 18px;
-    }
-
-    .modal-control-btn:hover {
-        background: #f1f5f9;
-    }
-
-    .details-grid {
-        display: grid;
-
-        grid-template-columns: repeat(2, 1fr);
-
-        gap: 12px;
-    }
-
-    .details-grid div {
-        background: #fff;
-
-        border: 1px solid #e5e7eb;
-
-        border-radius: 12px;
-
-        padding: 12px;
-    }
-
-    .details-grid-wide {
-        grid-column: span 2;
-    }
-
-    .details-grid span {
-        display: block;
-
-        color: #64748b;
-
-        font-size: 13px;
-
-        margin-bottom: 4px;
-    }
-
-    .details-grid strong {
-        color: #111827;
-    }
-
-    .payment-section {
-        margin-bottom: 28px;
-    }
-
-    .payment-section h3 {
-        margin: 0 0 14px;
-
-        color: #111827;
-    }
-
-    .allocation-card {
-        background: linear-gradient(
-            135deg,
-            #111827 0%,
-            #0f172a 100%
-        );
-
-        color: #fff;
-
-        border-radius: 16px;
-
-        padding: 20px;
-
-        border-left: 4px solid #9be000;
-
-        display: flex;
-        justify-content: space-between;
-
-        gap: 24px;
-    }
-
-    .allocation-card span {
-        display: block;
-
-        color: #cbd5e1;
-
-        font-size: 13px;
-
-        margin-bottom: 6px;
-    }
-
-    .allocation-card strong {
-        font-size: 24px;
-    }
-
-    .history-list {
-        border: 1px solid #e5e7eb;
-
-        border-radius: 14px;
-
-        overflow: hidden;
-    }
-
-    .history-row {
-        display: grid;
-
-        grid-template-columns: 180px 1fr 180px;
-
-        gap: 16px;
-
-        padding: 14px 16px;
-
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .history-row:last-child {
-        border-bottom: 0;
-    }
-
-    .history-date {
-        color: #64748b;
-        font-weight: 600;
-    }
-
-    .history-user {
-        text-align: right;
-        font-weight: 700;
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-    .payment-desktop {
-        position: fixed;
-        inset: 0;
-
-        z-index: 1500;
-
-        pointer-events: none;
-    }
-
+.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange{background:#84bd00!important;border-color:#84bd00!important;color:#1a2e00!important;}
+.flatpickr-day.inRange{background:#eef8d9!important;border-color:#eef8d9!important;}
+.flatpickr-day:hover{background:#eef8d9!important;}
 </style>
-
 
 <div class="dashboard-page">
 
     <div class="info-banner">
-        У розділі відображаються отримані та рознесені оплати
-        за останні 3 місяці.
-        При ручному налаштуванні діапазону фільтру
-        діє обмеження — дані не можуть бути старшими
-        ніж 13 місяців.
+        У розділі відображаються отримані та рознесені оплати за останні 3 місяці.
+        При ручному налаштуванні діапазону фільтру діє обмеження — дані не можуть бути старшими ніж 13 місяців.
     </div>
 
+    {# ===== SUMMARY КАРТКИ ===== #}
     <div class="payments-summary-grid">
-
-        <div class="summary-card green">
-            <div class="summary-card-label">
-                Отримано оплат
+        <div class="pay-kpi-card">
+            <div class="pay-kpi-top">
+                <div class="pay-kpi-icon green">
+                    <i class="ti ti-arrow-down-circle" aria-hidden="true"></i>
+                </div>
+                <span class="pay-kpi-label">Отримано оплат</span>
             </div>
-
-            <div class="summary-card-value">
+            <div class="pay-kpi-value">
                 {{ "{:,.0f}".format(data.summary.received_total).replace(",", " ") }}
+                <small>грн</small>
             </div>
+            <div class="pay-kpi-sub" id="kpi-period-1">Останні 3 місяці</div>
         </div>
 
-        <div class="summary-card dark">
-            <div class="summary-card-label">
-                Рознесено
+        <div class="pay-kpi-card">
+            <div class="pay-kpi-top">
+                <div class="pay-kpi-icon dark">
+                    <i class="ti ti-check" aria-hidden="true"></i>
+                </div>
+                <span class="pay-kpi-label">Рознесено</span>
             </div>
-
-            <div class="summary-card-value">
+            <div class="pay-kpi-value">
                 {{ "{:,.0f}".format(data.summary.allocated_total).replace(",", " ") }}
+                <small>грн</small>
             </div>
+            <div class="pay-kpi-sub" id="kpi-period-2">Останні 3 місяці</div>
         </div>
 
-        <div class="summary-card orange">
-            <div class="summary-card-label">
-                Нерознесено
+        <div class="pay-kpi-card">
+            <div class="pay-kpi-top">
+                <div class="pay-kpi-icon amber">
+                    <i class="ti ti-clock" aria-hidden="true"></i>
+                </div>
+                <span class="pay-kpi-label">Нерознесено</span>
             </div>
-
-            <div class="summary-card-value">
+            <div class="pay-kpi-value">
                 {{ "{:,.0f}".format(data.summary.unallocated_total).replace(",", " ") }}
+                <small>грн</small>
             </div>
+            <div class="pay-kpi-sub" id="kpi-period-3">Останні 3 місяці</div>
         </div>
 
-        <div class="summary-card red">
-            <div class="summary-card-label">
-                Кількість оплат
+        <div class="pay-kpi-card">
+            <div class="pay-kpi-top">
+                <div class="pay-kpi-icon red">
+                    <i class="ti ti-receipt" aria-hidden="true"></i>
+                </div>
+                <span class="pay-kpi-label">Кількість оплат</span>
             </div>
-
-            <div class="summary-card-value">
-                {{ data.summary.payments_count }}
-            </div>
+            <div class="pay-kpi-value">{{ data.summary.payments_count }}</div>
+            <div class="pay-kpi-sub" id="kpi-period-4">Останні 3 місяці</div>
         </div>
-
     </div>
 
-
+    {# ===== ТАБЛИЦЯ ===== #}
     <section class="panel registry-panel">
-
-        <div class="section-header">
-            <div>
-                <h2>Фільтри оплат</h2>
-
-                <span class="muted">
-                    Глибина даних обмежена 13 місяцями
-                </span>
-            </div>
-        </div>
-
-        <div class="registry-toolbar compact-filters">
-
-            <input type="month">
-            <input type="month">
-
-            <select>
-                <option>Всі статуси</option>
-                <option>Рознесено</option>
-                <option>Частково рознесено</option>
-                <option>Нерознесено</option>
-            </select>
-
-            <input
-                type="text"
-                placeholder="Номер платежу"
-            >
-
-            <input
-                type="text"
-                placeholder="Номер рахунку"
-            >
-
-            <input
-                class="wide-filter"
-                type="text"
-                placeholder="IBAN"
-            >
-
-        </div>
-
-    </section>
-
-
-    <section class="panel registry-panel mt">
-
         <div class="section-header">
             <div>
                 <h2>Оплати</h2>
-
-                <span class="muted">
-                    Реєстр отриманих оплат та їх рознесення
-                </span>
+                <span class="muted">Реєстр отриманих оплат та їх рознесення</span>
             </div>
         </div>
 
-        <table class="registry-table">
+        <div class="billing-filters">
+            <input type="text" id="payDateRange" placeholder="Діапазон дат" readonly>
+            <select id="payStatus" onchange="payUpdate()">
+                <option value="">Всі статуси</option>
+                <option value="Рознесено">Рознесено</option>
+                <option value="Частково рознесено">Частково рознесено</option>
+                <option value="Нерознесено">Нерознесено</option>
+            </select>
+            <input type="text" id="payNumber"  placeholder="Номер платежу"  oninput="payUpdate()">
+        </div>
 
-            <thead>
-                <tr>
-                    <th>Дата оплати</th>
-                    <th>Дата зарахування</th>
-                    <th>Номер оплати</th>
-                    <th>Отримана сума</th>
-                    <th>Рознесено</th>
-                    <th>Нерознесено</th>
-                    <th>Рахунки</th>
-                    <th>Статус</th>
-                    <th>Дії</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                {% for payment in data.payments %}
-
+        <div style="overflow-x:auto;">
+            <table class="registry-table">
+                <thead>
                     <tr>
-
+                        <th>Дата оплати</th>
+                        <th>Дата зарахування</th>
+                        <th>Номер оплати</th>
+                        <th>Отримана сума</th>
+                        <th>Рознесено</th>
+                        <th>Нерознесено</th>
+                        <th>Рахунки</th>
+                        <th>Статус</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody id="payTbody">
+                    {% for payment in data.payments %}
+                    <tr class="pay-row"
+                        data-date="{{ payment.payment_date }}"
+                        data-status="{{ payment.status }}"
+                        data-number="{{ payment.payment_number }}"
+                        data-iban="{{ payment.iban }}"
+                        data-invoices="{{ payment.linked_invoices | map(attribute='invoice_number') | join(' ') }}">
                         <td>{{ payment.payment_date }}</td>
-
                         <td>{{ payment.posting_date }}</td>
-
-                        <td>
-                            <strong>
-                                {{ payment.payment_number }}
-                            </strong>
-                        </td>
-
-                        <td>
-                            <strong>
-                                {{ "{:,.2f}".format(payment.received_amount).replace(",", " ") }}
-                                грн
-                            </strong>
-                        </td>
-
-                        <td>
-                            {{ "{:,.2f}".format(payment.allocated_amount).replace(",", " ") }}
-                            грн
-                        </td>
-
+                        <td><strong>{{ payment.payment_number }}</strong></td>
+                        <td>{{ "{:,.2f}".format(payment.received_amount).replace(",", " ") }} грн</td>
+                        <td>{{ "{:,.2f}".format(payment.allocated_amount).replace(",", " ") }} грн</td>
                         <td>
                             {% if payment.unallocated_amount > 0 %}
-                                <span style="color:#f59e0b;font-weight:700;">
-                                    {{ "{:,.2f}".format(payment.unallocated_amount).replace(",", " ") }}
-                                    грн
+                                <span style="color:#f59e0b;font-weight:600;">
+                                    {{ "{:,.2f}".format(payment.unallocated_amount).replace(",", " ") }} грн
                                 </span>
-                            {% else %}
-                                —
-                            {% endif %}
+                            {% else %}—{% endif %}
                         </td>
-
+                        <td>{{ payment.linked_invoices|length }}</td>
                         <td>
-                            {{ payment.linked_invoices|length }}
-                        </td>
-
-                        <td>
-
                             {% if payment.status == "Рознесено" %}
-                                <span class="badge success">
-                                    {{ payment.status }}
-                                </span>
-
+                                <span class="badge success">{{ payment.status }}</span>
                             {% elif payment.status == "Частково рознесено" %}
-                                <span class="badge warning">
-                                    {{ payment.status }}
-                                </span>
-
+                                <span class="badge warning">{{ payment.status }}</span>
                             {% else %}
-                                <span class="badge danger">
-                                    {{ payment.status }}
-                                </span>
-
+                                <span class="badge danger">{{ payment.status }}</span>
                             {% endif %}
-
                         </td>
-
                         <td>
-
                             <div class="row-actions">
-
-                                <button
-                                    type="button"
-                                    class="link-btn"
-                                    onclick="openPaymentModal('payment-{{ payment.payment_number }}')"
-                                >
-                                    Деталі
-                                </button>
-
+                                <button type="button" class="detail-btn" onclick="openPaymentModal('payment-{{ payment.payment_number }}')">Деталі</button>
                             </div>
-
                         </td>
-
                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <div class="registry-footer" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <span id="payCount"></span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <label style="font-size:13px;color:#94a3b8;">Рядків:</label>
+                <select id="payPageSize" onchange="payUpdate()" style="height:32px;padding:0 10px;border:1px solid #e2e6ea;border-radius:8px;font-size:13px;font-weight:700;background:#fff;color:#344054;outline:none;">
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="300">300</option>
+                    <option value="600">600</option>
+                </select>
+            </div>
+            <div id="payPagination" style="display:flex;gap:4px;"></div>
+        </div>
     </section>
 
 </div>
 
+{# ===== МОДАЛИ ===== #}
 <div id="payment-minimized-tray" class="payment-minimized-tray"></div>
 <div id="payment-desktop" class="payment-desktop hidden">
-
     {% for payment in data.payments %}
-            <div
-                id="payment-{{ payment.payment_number }}"
-                class="payment-modal-window hidden"
-                data-title="{{ payment.payment_number }}"
-            >
+    <div id="payment-{{ payment.payment_number }}" class="payment-modal-window hidden" data-title="{{ payment.payment_number }}">
 
-            <div class="payment-modal-header">
-
-                <div>
-
-                    <h2 class="payment-modal-title">
-                        {{ payment.payment_number }}
-                    </h2>
-
-                    <div class="payment-modal-subtitle">
-                        Оплата від {{ payment.payment_date }}
-                    </div>
-
-                </div>
-
-                <div>
-
-                    <div class="payment-modal-amount">
-                        {{ "{:,.2f}".format(payment.received_amount).replace(",", " ") }}
-                        грн
-                    </div>
-
+        <div class="payment-modal-header">
+            <div>
+                <h2 class="payment-modal-title">{{ payment.payment_number }}</h2>
+                <p class="payment-modal-subtitle">Оплата від {{ payment.payment_date }}</p>
+            </div>
+            <div>
+                <div class="payment-modal-amount">{{ "{:,.2f}".format(payment.received_amount).replace(",", " ") }} грн</div>
+                <div class="payment-modal-badges">
                     {% if payment.status == "Рознесено" %}
-                        <span class="badge success">
-                            {{ payment.status }}
-                        </span>
-
+                        <span class="badge success">{{ payment.status }}</span>
                     {% elif payment.status == "Частково рознесено" %}
-                        <span class="badge warning">
-                            {{ payment.status }}
-                        </span>
-
+                        <span class="badge warning">{{ payment.status }}</span>
                     {% else %}
-                        <span class="badge danger">
-                            {{ payment.status }}
-                        </span>
-
+                        <span class="badge danger">{{ payment.status }}</span>
                     {% endif %}
-
                 </div>
-
-                <div class="modal-controls">
-
-                    <button
-                        type="button"
-                        class="modal-control-btn"
-                        onclick="minimizePaymentModal('payment-{{ payment.payment_number }}')"
-                    >
-                        —
-                    </button>
-
-                    <button
-                        type="button"
-                        class="modal-control-btn"
-                        onclick="toggleFullscreenPaymentModal('payment-{{ payment.payment_number }}')"
-                    >
-                        □
-                    </button>
-
-                    <button
-                        type="button"
-                        class="modal-control-btn"
-                        onclick="closePaymentModal('payment-{{ payment.payment_number }}')"
-                    >
-                        ×
-                    </button>
-
-                </div>
-
             </div>
-
-            <div class="payment-modal-body">
-
-                <section class="payment-section">
-
-                    <h3>Основні дані платежу</h3>
-
-                    <div class="details-grid">
-
-                        <div>
-                            <span>Дата платежу</span>
-
-                            <strong>
-                                {{ payment.payment_date }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Дата зарахування</span>
-
-                            <strong>
-                                {{ payment.posting_date }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Номер платежу</span>
-
-                            <strong>
-                                {{ payment.payment_number }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Платник</span>
-
-                            <strong>
-                                {{ payment.payer }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>IBAN</span>
-
-                            <strong>
-                                {{ payment.iban }}
-                            </strong>
-                        </div>
-
-                        <div>
-                            <span>Отримана сума</span>
-
-                            <strong>
-                                {{ "{:,.2f}".format(payment.received_amount).replace(",", " ") }}
-                                грн
-                            </strong>
-                        </div>
-
-                        <div class="details-grid-wide">
-
-                            <span>Призначення платежу</span>
-
-                            <strong>
-                                {{ payment.payment_purpose }}
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <section class="payment-section">
-
-                    <h3>Рознесення платежу</h3>
-
-                    <div class="allocation-card">
-
-                        <div>
-
-                            <span>Рознесено</span>
-
-                            <strong>
-                                {{ "{:,.2f}".format(payment.allocated_amount).replace(",", " ") }}
-                                грн
-                            </strong>
-
-                        </div>
-
-                        <div>
-
-                            <span>Нерознесено</span>
-
-                            <strong>
-
-                                {% if payment.unallocated_amount > 0 %}
-                                    {{ "{:,.2f}".format(payment.unallocated_amount).replace(",", " ") }}
-                                    грн
-                                {% else %}
-                                    —
-                                {% endif %}
-
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <section class="payment-section">
-
-                    <h3>Прив’язані рахунки</h3>
-
-                    <table class="registry-table compact-table">
-
-                        <thead>
-                            <tr>
-                                <th>Номер рахунку</th>
-                                <th>Дата рахунку</th>
-                                <th>Тип</th>
-                                <th>Сума рахунку</th>
-                                <th>Рознесено оплатою</th>
-                                <th>PDF</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            {% for invoice in payment.linked_invoices %}
-
-                                <tr>
-
-                                    <td>
-                                        <strong>
-                                            {{ invoice.invoice_number }}
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        {{ invoice.invoice_date }}
-                                    </td>
-
-                                    <td>
-                                        {{ invoice.invoice_type }}
-                                    </td>
-
-                                    <td>
-                                        {{ "{:,.2f}".format(invoice.invoice_amount).replace(",", " ") }}
-                                        грн
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            {{ "{:,.2f}".format(invoice.allocated_amount).replace(",", " ") }}
-                                            грн
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        <a
-                                            class="link-btn"
-                                            href="{{ invoice.pdf_url }}"
-                                        >
-                                            PDF
-                                        </a>
-                                    </td>
-
-                                </tr>
-
-                            {% endfor %}
-
-                        </tbody>
-
-                    </table>
-
-                </section>
-
-
-                <section class="payment-section">
-
-                    <h3>Історія обробки</h3>
-
-                    <div class="history-list">
-
-                        {% for item in payment.history %}
-
-                            <div class="history-row">
-
-                                <div class="history-date">
-                                    {{ item.date }}
-                                </div>
-
-                                <div>
-                                    {{ item.event }}
-                                </div>
-
-                                <div class="history-user">
-                                    {{ item.user }}
-                                </div>
-
-                            </div>
-
-                        {% endfor %}
-
-                    </div>
-
-                </section>
-
+            <div class="modal-controls">
+                <button type="button" class="modal-control-btn" onclick="minimizePaymentModal('payment-{{ payment.payment_number }}')">—</button>
+                <button type="button" class="modal-control-btn" onclick="toggleFullscreenPaymentModal('payment-{{ payment.payment_number }}')">□</button>
+                <button type="button" class="modal-control-btn" onclick="closePaymentModal('payment-{{ payment.payment_number }}')">×</button>
             </div>
-
         </div>
 
-    {% endfor %}
+        <div class="payment-modal-body">
+            <section class="payment-section">
+                <h3>Основні дані платежу</h3>
+                <div class="details-grid">
+                    <div><span>Дата платежу</span><strong>{{ payment.payment_date }}</strong></div>
+                    <div><span>Дата зарахування</span><strong>{{ payment.posting_date }}</strong></div>
+                    <div><span>Номер платежу</span><strong>{{ payment.payment_number }}</strong></div>
+                    <div><span>Платник</span><strong>{{ payment.payer }}</strong></div>
+                    <div><span>IBAN</span><strong>{{ payment.iban }}</strong></div>
+                    <div><span>Отримана сума</span><strong>{{ "{:,.2f}".format(payment.received_amount).replace(",", " ") }} грн</strong></div>
+                    <div class="details-grid-wide"><span>Призначення платежу</span><strong>{{ payment.payment_purpose }}</strong></div>
+                </div>
+            </section>
 
+            <section class="payment-section">
+                <h3>Рознесення платежу</h3>
+                <div class="allocation-card">
+                    <div>
+                        <span>Рознесено</span>
+                        <strong>{{ "{:,.2f}".format(payment.allocated_amount).replace(",", " ") }} грн</strong>
+                    </div>
+                    <div>
+                        <span>Нерознесено</span>
+                        <strong>{% if payment.unallocated_amount > 0 %}{{ "{:,.2f}".format(payment.unallocated_amount).replace(",", " ") }} грн{% else %}—{% endif %}</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="payment-section">
+                <h3>Прив'язані рахунки</h3>
+                <table class="registry-table compact-table">
+                    <thead>
+                        <tr>
+                            <th>Номер рахунку</th>
+                            <th>Дата рахунку</th>
+                            <th>Тип</th>
+                            <th>Сума рахунку</th>
+                            <th>Рознесено оплатою</th>
+                            <th>PDF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in payment.linked_invoices %}
+                        <tr>
+                            <td><strong>{{ inv.invoice_number }}</strong></td>
+                            <td>{{ inv.invoice_date }}</td>
+                            <td>{{ inv.invoice_type }}</td>
+                            <td>{{ "{:,.2f}".format(inv.invoice_amount).replace(",", " ") }} грн</td>
+                            <td><strong>{{ "{:,.2f}".format(inv.allocated_amount).replace(",", " ") }} грн</strong></td>
+                            <td><a class="pdf-btn" href="{{ inv.pdf_url }}">PDF</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="payment-section">
+                <h3>Історія обробки</h3>
+                <div class="history-list">
+                    {% for item in payment.history %}
+                    <div class="history-row">
+                        <div class="history-date">{{ item.date }}</div>
+                        <div>{{ item.event }}</div>
+                        <div class="history-user">{{ item.user }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/uk.js"></script>
 <script>
-
-    let paymentModalZIndex = 2001;
-
-    function getOpenPaymentModals() {
-        return Array.from(
-            document.querySelectorAll(
-                ".payment-modal-window:not(.hidden)"
-            )
-        );
-    }
-
-    function syncPaymentDesktopVisibility() {
-
-        const desktop =
-            document.getElementById("payment-desktop");
-
-        const hasVisible =
-            document.querySelector(
-                ".payment-modal-window:not(.hidden):not(.is-minimized)"
-            );
-
-        if (hasVisible) {
-
-            desktop.classList.remove("hidden");
-
-            document.body.classList.add("modal-open");
-
-            return;
-        }
-
-        const hasAnyOpen =
-            document.querySelector(
-                ".payment-modal-window:not(.hidden)"
-            );
-
-        if (!hasAnyOpen) {
-
-            desktop.classList.add("hidden");
-
-            document.body.classList.remove("modal-open");
-        }
-    }
-
-    function bringPaymentModalToFront(modal) {
-
-        paymentModalZIndex += 1;
-
-        modal.style.zIndex = paymentModalZIndex;
-    }
-
-    function openPaymentModal(id) {
-
-        const desktop =
-            document.getElementById("payment-desktop");
-
-        const modal =
-            document.getElementById(id);
-
-        if (!modal) {
-            return;
-        }
-
-        desktop.classList.remove("hidden");
-
-        modal.classList.remove("hidden");
-        modal.classList.remove("is-minimized");
-
-        bringPaymentModalToFront(modal);
-
-        removePaymentMinimizedCard(id);
-
-        syncPaymentDesktopVisibility();
-    }
-
-    function closePaymentModal(id) {
-
-        const modal =
-            document.getElementById(id);
-
-        if (!modal) {
-            return;
-        }
-
-        modal.classList.add("hidden");
-
-        modal.classList.remove("is-minimized");
-        modal.classList.remove("is-fullscreen");
-
-        removePaymentMinimizedCard(id);
-
-        syncPaymentDesktopVisibility();
-    }
-
-    function minimizePaymentModal(id) {
-
-        const modal =
-            document.getElementById(id);
-
-        if (!modal) {
-            return;
-        }
-
-        modal.classList.add("is-minimized");
-
-        addPaymentMinimizedCard(
-            id,
-            modal.dataset.title || id
-        );
-
-        syncPaymentDesktopVisibility();
-    }
-
-    function restorePaymentModal(id) {
-
-        const modal =
-            document.getElementById(id);
-
-        if (!modal) {
-            return;
-        }
-
-        document
-            .getElementById("payment-desktop")
-            .classList.remove("hidden");
-
-        modal.classList.remove("is-minimized");
-        modal.classList.remove("hidden");
-
-        bringPaymentModalToFront(modal);
-
-        removePaymentMinimizedCard(id);
-
-        syncPaymentDesktopVisibility();
-    }
-
-    function toggleFullscreenPaymentModal(id) {
-
-        const modal =
-            document.getElementById(id);
-
-        if (!modal) {
-            return;
-        }
-
-        modal.classList.toggle("is-fullscreen");
-
-        bringPaymentModalToFront(modal);
-    }
-
-    function addPaymentMinimizedCard(id, title) {
-
-        const tray =
-            document.getElementById(
-                "payment-minimized-tray"
-            );
-
-        if (
-            document.getElementById(
-                "payment-minimized-" + id
-            )
-        ) {
-            return;
-        }
-
-        const card =
-            document.createElement("button");
-
-        card.type = "button";
-
-        card.id =
-            "payment-minimized-" + id;
-
-        card.className =
-            "payment-minimized-card";
-
-        card.textContent = title;
-
-        card.onclick = function () {
-            restorePaymentModal(id);
-        };
-
-        tray.appendChild(card);
-    }
-
-    function removePaymentMinimizedCard(id) {
-
-        const card =
-            document.getElementById(
-                "payment-minimized-" + id
-            );
-
-        if (card) {
-            card.remove();
-        }
-    }
-
-    document.addEventListener(
-        "keydown",
-        function (event) {
-
-            if (event.key === "Escape") {
-
-                const openModals =
-                    getOpenPaymentModals()
-                    .filter(function (modal) {
-
-                        return !modal.classList.contains(
-                            "is-minimized"
-                        );
-                    });
-
-                if (openModals.length > 0) {
-
-                    const topModal =
-                        openModals.sort(function (a, b) {
-
-                            return Number(
-                                b.style.zIndex || 0
-                            ) - Number(
-                                a.style.zIndex || 0
-                            );
-                        })[0];
-
-                    closePaymentModal(topModal.id);
-                }
-            }
-        }
-    );
-
-    document.querySelectorAll(
-        ".payment-modal-window"
-    ).forEach(function (modal) {
-
-        const header =
-            modal.querySelector(
-                ".payment-modal-header"
-            );
-
-        modal.addEventListener(
-            "mousedown",
-            function () {
-
-                bringPaymentModalToFront(modal);
-            }
-        );
-
-        header.addEventListener(
-            "mousedown",
-            function (event) {
-
-                if (
-                    event.target.closest("button")
-                ) {
-                    return;
-                }
-
-                if (
-                    modal.classList.contains(
-                        "is-fullscreen"
-                    )
-                ) {
-                    return;
-                }
-
-                bringPaymentModalToFront(modal);
-
-                const startX =
-                    event.clientX;
-
-                const startY =
-                    event.clientY;
-
-                const rect =
-                    modal.getBoundingClientRect();
-
-                const startLeft =
-                    rect.left;
-
-                const startTop =
-                    rect.top;
-
-                function onMouseMove(moveEvent) {
-
-                    modal.style.left =
-                        startLeft +
-                        moveEvent.clientX -
-                        startX +
-                        "px";
-
-                    modal.style.top =
-                        startTop +
-                        moveEvent.clientY -
-                        startY +
-                        "px";
-
-                    modal.style.transform =
-                        "none";
-                }
-
-                function onMouseUp() {
-
-                    document.removeEventListener(
-                        "mousemove",
-                        onMouseMove
-                    );
-
-                    document.removeEventListener(
-                        "mouseup",
-                        onMouseUp
-                    );
-                }
-
-                document.addEventListener(
-                    "mousemove",
-                    onMouseMove
-                );
-
-                document.addEventListener(
-                    "mouseup",
-                    onMouseUp
-                );
-            }
-        );
+var payFrom='', payTo='';
+
+function toYM(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+
+function fmtDate(d){
+    return d.getDate().toString().padStart(2,'0')+'.'+
+           (d.getMonth()+1).toString().padStart(2,'0')+'.'+
+           d.getFullYear();
+}
+
+function updateKpiPeriod(dates){
+    var text = dates && dates[0] && dates[1]
+        ? fmtDate(dates[0]) + ' — ' + fmtDate(dates[1])
+        : 'Останні 3 місяці';
+    ['kpi-period-1','kpi-period-2','kpi-period-3','kpi-period-4'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.textContent = text;
     });
+}
 
+function parseDue(str){
+    if(!str||str.length<10) return '';
+    var p=str.split('.'); return p.length===3?p[2]+'-'+p[1]:'';
+}
+
+function paginate(rows,pv,szId,cntId,pagId){
+    var pp=Number(document.getElementById(szId).value||25);
+    var vis=rows.filter(function(r){ return r.getAttribute('data-visible')!=='false'; });
+    var tot=vis.length,pages=Math.max(1,Math.ceil(tot/pp));
+    pv.p=Math.min(pv.p,pages);
+    var s=(pv.p-1)*pp,e=s+pp;
+    rows.forEach(function(r){ r.style.display='none'; });
+    vis.forEach(function(r,i){ r.style.display=(i>=s&&i<e)?'':'none'; });
+    document.getElementById(cntId).textContent=tot?'Показано '+(s+1)+'–'+Math.min(e,tot)+' з '+tot:'Нічого не знайдено';
+    var pg=document.getElementById(pagId); pg.innerHTML='';
+    if(pages<=1) return;
+    function mkb(lbl,page,act,dis){
+        var b=document.createElement('button'); b.textContent=lbl;
+        b.style.cssText='padding:5px 10px;border-radius:8px;border:1px solid '+(act?'#84bd00':'#e2e6ea')+';background:'+(act?'#84bd00':'#fff')+';color:'+(act?'#1a2e00':'#344054')+';font-weight:700;font-size:13px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?'.4':'1');
+        if(!dis) b.onclick=function(){ pv.p=page; paginate(rows,pv,szId,cntId,pagId); };
+        return b;
+    }
+    pg.appendChild(mkb('←',pv.p-1,false,pv.p===1));
+    for(var p=1;p<=pages;p++){
+        if(pages>7&&p>2&&p<pages-1&&Math.abs(p-pv.p)>1){
+            if(p===3||p===pages-2){var sp=document.createElement('span');sp.textContent='…';sp.style.padding='5px 4px';pg.appendChild(sp);}
+            continue;
+        }
+        pg.appendChild(mkb(p,p,p===pv.p,false));
+    }
+    pg.appendChild(mkb('→',pv.p+1,false,pv.p===pages));
+}
+
+var payPage={p:1};
+function payUpdate(){ payPage.p=1; payRender(); }
+function payRender(){
+    var status =(document.getElementById('payStatus').value||'');
+    var number =(document.getElementById('payNumber').value||'').toLowerCase().trim();
+    var invoice=(document.getElementById('payInvoice').value||'').toLowerCase().trim();
+    var iban   =(document.getElementById('payIban').value||'').toLowerCase().trim();
+    var rows=Array.from(document.querySelectorAll('.pay-row'));
+    rows.forEach(function(r){
+        var ym=parseDue(r.getAttribute('data-date'));
+        var ok=(!payFrom||ym>=payFrom)&&(!payTo||ym<=payTo)
+            &&(!status ||r.getAttribute('data-status')===status)
+            &&(!number ||r.getAttribute('data-number').toLowerCase().includes(number))
+            &&(!invoice||r.getAttribute('data-invoices').toLowerCase().includes(invoice))
+            &&(!iban   ||r.getAttribute('data-iban').toLowerCase().includes(iban));
+        r.setAttribute('data-visible',ok?'true':'false');
+    });
+    paginate(rows,payPage,'payPageSize','payCount','payPagination');
+}
+
+var pmZ=2001;
+function syncPD(){ var d=document.getElementById('payment-desktop'); d.classList.toggle('hidden',!document.querySelector('.payment-modal-window:not(.hidden)')); document.body.classList.toggle('modal-open',!!document.querySelector('.payment-modal-window:not(.hidden):not(.is-minimized)')); }
+function pmF(m){ pmZ++; m.style.zIndex=pmZ; }
+function openPaymentModal(id){ var m=document.getElementById(id); if(!m) return; document.getElementById('payment-desktop').classList.remove('hidden'); m.classList.remove('hidden','is-minimized'); pmF(m); pmRm(id); syncPD(); }
+function closePaymentModal(id){ var m=document.getElementById(id); if(!m) return; m.classList.add('hidden'); m.classList.remove('is-minimized','is-fullscreen'); pmRm(id); syncPD(); }
+function minimizePaymentModal(id){ var m=document.getElementById(id); if(!m) return; m.classList.add('is-minimized'); pmAdd(id,m.dataset.title||id); syncPD(); }
+function restorePaymentModal(id){ var m=document.getElementById(id); if(!m) return; document.getElementById('payment-desktop').classList.remove('hidden'); m.classList.remove('is-minimized','hidden'); pmF(m); pmRm(id); syncPD(); }
+function toggleFullscreenPaymentModal(id){ var m=document.getElementById(id); if(!m) return; m.classList.toggle('is-fullscreen'); pmF(m); }
+function pmAdd(id,title){ var t=document.getElementById('payment-minimized-tray'); if(document.getElementById('pmm-'+id)) return; var c=document.createElement('button'); c.type='button'; c.id='pmm-'+id; c.className='payment-minimized-card'; c.textContent=title; c.onclick=function(){ restorePaymentModal(id); }; t.appendChild(c); }
+function pmRm(id){ var c=document.getElementById('pmm-'+id); if(c) c.remove(); }
+
+document.querySelectorAll('.payment-modal-window').forEach(function(m){
+    m.addEventListener('mousedown',function(){ pmF(m); });
+    var h=m.querySelector('.payment-modal-header');
+    h.addEventListener('mousedown',function(e){
+        if(e.target.closest('button')||m.classList.contains('is-fullscreen')) return;
+        pmF(m);
+        var r=m.getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;
+        function mv(me){ m.style.left=(me.clientX-dx)+'px'; m.style.top=(me.clientY-dy)+'px'; m.style.transform='none'; }
+        function up(){ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); }
+        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+    });
+});
+
+document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape') return;
+    var open=Array.from(document.querySelectorAll('.payment-modal-window:not(.hidden):not(.is-minimized)')).sort(function(a,b){ return (Number(b.style.zIndex)||0)-(Number(a.style.zIndex)||0); });
+    if(open.length) closePaymentModal(open[0].id);
+});
+
+document.addEventListener('DOMContentLoaded',function(){
+    flatpickr('#payDateRange',{
+        mode:'range', locale:'uk', dateFormat:'d.m.Y',
+        onChange:function(dates){
+            payFrom = dates[0] ? toYM(dates[0]) : '';
+            payTo   = dates[1] ? toYM(dates[1]) : '';
+            updateKpiPeriod(dates.length===2 ? dates : null);
+            payUpdate();
+        },
+        onReady:function(){ updateKpiPeriod(null); }
+    });
+    payRender();
+});
 </script>
 
 {% endblock %}
