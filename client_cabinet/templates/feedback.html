@@ -9,7 +9,7 @@
     "Зворотній зв’язок",
     "Реєстр звернень, комунікація з ОККО-КОНТРАКТ, контроль SLA та вкладення"
 ) }}
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
 
@@ -27,11 +27,16 @@
     }
 
     .feedback-hero {
-        background: #111827;
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 70% 20%, rgba(132, 189, 0, 0.18), transparent 32%),
+            linear-gradient(135deg, #101827 0%, #05070c 100%);
         color: #fff;
         border-radius: 28px;
-        padding: 26px 28px;
-        border-left: 7px solid #84bd00;
+        padding: 30px 32px;
+        border-left: 6px solid #84bd00;
+        box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
 
         display: grid;
         grid-template-columns: 1.35fr auto;
@@ -39,47 +44,82 @@
         align-items: center;
     }
 
+    .feedback-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(132, 189, 0, 0.22) 1px, transparent 1px);
+        background-size: 16px 16px;
+        mask-image: radial-gradient(circle at 68% 50%, black, transparent 38%);
+        opacity: 0.35;
+        pointer-events: none;
+    }
+
     .feedback-hero h2 {
-        margin: 0 0 8px;
-        font-size: 28px;
+        position: relative;
+        z-index: 1;
+        margin: 0 0 10px;
+        font-size: 30px;
+        line-height: 1.1;
+        letter-spacing: -0.04em;
     }
 
     .feedback-hero p {
+        position: relative;
+        z-index: 1;
         margin: 0;
-        color: rgba(255,255,255,0.68);
-        line-height: 1.5;
+        max-width: 880px;
+        color: rgba(255,255,255,0.72);
+        line-height: 1.55;
+        font-weight: 650;
     }
 
     .feedback-hero-actions {
+        position: relative;
+        z-index: 1;
         display: flex;
-        gap: 10px;
+        gap: 12px;
         justify-content: flex-end;
         flex-wrap: wrap;
     }
 
     .feedback-primary-btn,
     .feedback-secondary-btn {
-        height: 44px;
-        padding: 0 18px;
-        border-radius: 14px;
+        height: 46px;
+        padding: 0 20px;
+        border-radius: 15px;
         border: 0;
         font-weight: 900;
         cursor: pointer;
         text-decoration: none;
+        transition: 0.18s ease;
 
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 9px;
     }
 
     .feedback-primary-btn {
-        background: #84bd00;
-        color: #000;
+        background: linear-gradient(180deg, #8ed500, #63ae00);
+        color: #101827;
+        box-shadow: 0 12px 26px rgba(132, 189, 0, 0.28);
+    }
+
+    .feedback-primary-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 34px rgba(132, 189, 0, 0.34);
     }
 
     .feedback-secondary-btn {
-        background: rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.08);
         color: #fff;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
+    }
+
+    .feedback-secondary-btn:hover {
+        background: rgba(255,255,255,0.14);
+        transform: translateY(-1px);
     }
 
     .feedback-kpi-grid {
@@ -89,37 +129,68 @@
     }
 
     .feedback-kpi-card {
+        position: relative;
+        overflow: hidden;
         background: #fff;
-        border-radius: 22px;
-        padding: 22px;
+        border-radius: 24px;
+        padding: 24px;
         border: 1px solid #e5e7eb;
-        border-left: 5px solid #84bd00;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+        box-shadow: 0 16px 42px rgba(15, 23, 42, 0.055);
+
+        display: grid;
+        grid-template-columns: 54px 1fr;
+        gap: 16px;
+        align-items: center;
     }
 
-    .feedback-kpi-card.warning {
-        border-left-color: #f59e0b;
+    .feedback-kpi-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--kpi-color, #84bd00);
+    }
+
+    .feedback-kpi-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 17px;
+        display: grid;
+        place-items: center;
+        background: color-mix(in srgb, var(--kpi-color, #84bd00) 13%, white);
+        color: var(--kpi-color, #84bd00);
+    }
+
+    .feedback-kpi-icon svg {
+        width: 26px;
+        height: 26px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     .feedback-kpi-label {
-        color: #64748b;
+        color: #334155;
         font-size: 13px;
         font-weight: 900;
-        margin-bottom: 10px;
+        margin-bottom: 7px;
     }
 
     .feedback-kpi-value {
-        color: #111827;
-        font-size: 32px;
-        font-weight: 900;
-        line-height: 1.1;
+        color: #0f172a;
+        font-size: 34px;
+        font-weight: 950;
+        line-height: 1;
+        letter-spacing: -0.04em;
     }
 
     .feedback-kpi-note {
         margin-top: 8px;
         color: #64748b;
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 750;
     }
 
     .feedback-toolbar {
@@ -127,31 +198,91 @@
         top: 16px;
         z-index: 20;
 
-        background: #fff;
+        background: rgba(255,255,255,0.9);
         border-radius: 24px;
-        padding: 20px;
+        padding: 14px;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 10px 28px rgba(15,23,42,0.08);
+        box-shadow: 0 14px 34px rgba(15,23,42,0.07);
+        backdrop-filter: blur(12px);
 
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) 170px 150px 170px auto auto;
         gap: 12px;
         align-items: center;
     }
 
+    .feedback-search-wrap {
+        position: relative;
+    }
+
+    .feedback-search-wrap svg {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        transform: translateY(-50%);
+        color: #64748b;
+        pointer-events: none;
+    }
+
     .feedback-toolbar input,
     .feedback-toolbar select {
-        height: 44px;
-        border: 1px solid #d1d5db;
-        border-radius: 14px;
+        width: 100%;
+        height: 48px;
+        border: 1px solid #d9dee7;
+        border-radius: 15px;
         padding: 0 14px;
         background: #fff;
-        font-weight: 800;
+        color: #0f172a;
+        font-weight: 850;
+        outline: none;
     }
 
     .feedback-toolbar input {
-        min-width: 320px;
-        flex: 1;
+        padding-left: 44px;
+    }
+
+    .feedback-toolbar input:focus,
+    .feedback-toolbar select:focus {
+        border-color: #84bd00;
+        box-shadow: 0 0 0 4px rgba(132, 189, 0, 0.12);
+    }
+
+    .feedback-filter-btn {
+        height: 48px;
+        border: 1px solid #d9dee7;
+        border-radius: 15px;
+        padding: 0 18px;
+        background: #fff;
+        color: #0f172a;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.18s ease;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+    }
+
+    .feedback-filter-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .feedback-filter-btn:hover {
+        border-color: #84bd00;
+        background: #f7faee;
+    }
+
+    .feedback-reset-btn {
+        height: 48px;
+        border: 0;
+        background: transparent;
+        color: #4d8b00;
+        font-weight: 900;
+        cursor: pointer;
     }
 
     .tickets-panel {
@@ -159,61 +290,80 @@
         border-radius: 28px;
         padding: 26px;
         border: 1px solid #e5e7eb;
-        box-shadow: 0 14px 35px rgba(15,23,42,0.06);
+        box-shadow: 0 18px 52px rgba(15,23,42,0.065);
     }
 
     .panel-title {
         margin: 0 0 8px;
+        font-size: 24px;
+        letter-spacing: -0.03em;
+        color: #0f172a;
     }
 
     .panel-subtitle {
-        margin: 0 0 20px;
+        margin: 0 0 22px;
         color: #64748b;
         line-height: 1.45;
+        font-weight: 650;
     }
 
     .ticket-list {
-        max-height: 620px;
-        overflow-y: auto;
-        padding-right: 6px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        border-radius: 24px;
+        background: #fff;
+    }
 
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+    .ticket-list-head,
+    .ticket-card {
+        display: grid;
+        grid-template-columns:
+            minmax(320px, 1.35fr)
+            190px
+            210px
+            210px
+            190px
+            190px;
+        gap: 18px;
+        align-items: center;
+    }
+
+    .ticket-list-head {
+        min-height: 52px;
+        padding: 0 20px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 950;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
     }
 
     .ticket-card {
-        display: grid;
-        grid-template-columns: minmax(320px, 1.25fr) minmax(420px, 1fr) 230px;
-        gap: 20px;
-        align-items: center;
-
-        min-height: 90px;
-
-        border: 1px solid #e5e7eb;
+        position: relative;
+        min-height: 96px;
+        padding: 18px 20px;
+        border-bottom: 1px solid #edf0f4;
         border-left: 5px solid #84bd00;
-        border-radius: 20px;
-
-        padding: 14px 18px;
-
         background: #fff;
-
         cursor: pointer;
-        transition: 0.18s;
+        transition: 0.18s ease;
+    }
+
+    .ticket-card:last-child {
+        border-bottom: 0;
     }
 
     .ticket-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+        background: #fbfcfd;
+        box-shadow: inset 0 0 0 1px rgba(132, 189, 0, 0.12);
     }
 
     .ticket-card.waiting-for-client {
-        background: #fff;
         border-left-color: #f59e0b;
     }
 
     .ticket-card.in-progress {
-        border-left-color: #111827;
+        border-left-color: #0f172a;
     }
 
     .ticket-card.answered {
@@ -229,84 +379,256 @@
 
     .ticket-number {
         font-size: 17px;
-        font-weight: 900;
-        color: #111827;
-        margin-bottom: 4px;
+        font-weight: 950;
+        color: #0f172a;
+        margin-bottom: 5px;
     }
 
     .ticket-subject {
         font-size: 15px;
-        font-weight: 900;
-        margin-bottom: 5px;
+        font-weight: 950;
+        color: #111827;
+        margin-bottom: 6px;
+        line-height: 1.25;
     }
 
     .ticket-topic {
         color: #64748b;
         font-size: 12px;
         line-height: 1.35;
+        font-weight: 700;
     }
 
-    .ticket-compact-meta {
+    .ticket-meta-item {
         display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
         align-items: center;
-
-        color: #64748b;
+        gap: 9px;
+        color: #334155;
         font-size: 13px;
         font-weight: 800;
-        line-height: 1.45;
+        line-height: 1.35;
     }
 
-    .ticket-meta-dot {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: #cbd5e1;
+    .ticket-meta-item svg {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 auto;
+        color: #64748b;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .ticket-meta-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .ticket-meta-stack strong {
+        color: #334155;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .ticket-meta-stack span {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
     }
 
     .ticket-status-area {
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: center;
-        gap: 7px;
-        min-width: 220px;
+        align-items: center;
+        justify-content: flex-start;
     }
 
     .ticket-primary-status {
-        font-size: 15px;
-        font-weight: 900;
-        color: #111827;
-        text-align: right;
-    }
+        min-width: 170px;
+        height: 36px;
 
-    .ticket-secondary-status {
         display: inline-flex;
         align-items: center;
-        padding: 6px 10px;
+        justify-content: center;
+
+        padding: 0 16px;
         border-radius: 999px;
-        background: #eef8d9;
-        color: #3a6d00;
-        font-size: 12px;
-        font-weight: 900;
+
+        background: #f8fafc;
+        color: #111827;
+
+        font-size: 13px;
+        font-weight: 950;
+        text-align: center;
         white-space: nowrap;
     }
 
-    .ticket-secondary-status.warning {
-        background: #fff2cc;
-        color: #7a5200;
+    .ticket-card.waiting-for-client .ticket-primary-status {
+        background: #fff4d8;
+        color: #8a5a00;
     }
 
-    .ticket-secondary-status.dark {
-        background: #111827;
+    .ticket-card.in-progress .ticket-primary-status {
+        background: #eef4ff;
+        color: #2458d3;
+    }
+
+    .ticket-card.answered .ticket-primary-status {
+        background: #eef8df;
+        color: #3f6a00;
+    }
+
+    .ticket-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ticket-open-btn {
+        position: relative;
+
+        min-width: 138px;
+        height: 44px;
+
+        border: 0;
+        border-radius: 14px;
+
+        background: #fff;
+        color: #111827;
+
+        font-size: 14px;
+        font-weight: 950;
+
+        cursor: pointer;
+        transition: 0.18s ease;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        box-shadow: inset 0 0 0 1px #d9dee7;
+    }
+
+    .ticket-open-btn:hover {
+        transform: translateY(-1px);
+        color: #111827;
+        box-shadow:
+            0 10px 24px rgba(15,23,42,0.08),
+            inset 0 0 0 1px #84bd00;
+    }
+
+    .ticket-open-btn.has-update {
+        background:
+            linear-gradient(
+                180deg,
+                rgba(132,189,0,0.17),
+                rgba(132,189,0,0.10)
+            );
+        color: #365300;
+        box-shadow:
+            inset 0 0 0 1px rgba(132,189,0,0.22),
+            0 8px 20px rgba(132,189,0,0.10);
+    }
+
+    .ticket-open-btn.has-update:hover {
+        background:
+            linear-gradient(
+                180deg,
+                rgba(132,189,0,0.24),
+                rgba(132,189,0,0.15)
+            );
+        box-shadow:
+            inset 0 0 0 1px rgba(132,189,0,0.34),
+            0 12px 26px rgba(132,189,0,0.18);
+    }
+
+    .update-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+
+        background: #84bd00;
         color: #fff;
+
+        font-size: 11px;
+        font-weight: 950;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        box-shadow:
+            0 0 0 3px #fff,
+            0 8px 18px rgba(132,189,0,0.34);
     }
 
-    .ticket-open-hint {
-        color: #84bd00;
-        font-size: 12px;
+    .ticket-more-btn {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: #0f172a;
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+        transition: 0.18s ease;
+    }
+
+    .ticket-more-btn:hover {
+        background: #f1f5f9;
+    }
+
+    .feedback-pagination {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 18px 4px 0;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 850;
+    }
+
+    .feedback-page-size {
+        height: 40px;
+        margin-left: 8px;
+        padding: 0 12px;
+        border: 1px solid #d9dee7;
+        border-radius: 12px;
+        background: #fff;
+        font-weight: 850;
+    }
+
+    .feedback-pages {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .feedback-page-btn {
+        min-width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: #334155;
         font-weight: 900;
+        cursor: pointer;
+    }
+
+    .feedback-page-btn.active {
+        background: #eaf7dc;
+        color: #3f7500;
     }
 
     .feedback-modal-overlay {
@@ -718,19 +1040,40 @@
         cursor: pointer;
     }
 
+    @media (max-width: 1400px) {
+        .ticket-list-head,
+        .ticket-card {
+            grid-template-columns:
+                minmax(300px, 1.25fr)
+                170px
+                190px
+                190px
+                175px
+                170px;
+        }
+    }
+
     @media (max-width: 1200px) {
         .feedback-kpi-grid,
         .ticket-detail-grid {
             grid-template-columns: 1fr;
         }
 
-        .ticket-card {
-            grid-template-columns: 1fr;
+        .feedback-toolbar {
+            grid-template-columns: 1fr 1fr;
         }
 
-        .ticket-status-area {
-            align-items: flex-start;
-            min-width: 0;
+        .ticket-list-head {
+            display: none;
+        }
+
+        .ticket-card {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .ticket-actions {
+            justify-content: flex-start;
         }
 
         .ticket-form-section,
@@ -753,54 +1096,77 @@
             <h2>Service Desk ОККО-КОНТРАКТ</h2>
             <p>
                 Створюйте звернення, отримуйте відповіді, надавайте додаткову інформацію,
-                обмінюйтеся вкладеннями та контролюйте SLA.
+                обмінюйтеся вкладеннями та контролюйте виконання.
             </p>
         </div>
 
         <div class="feedback-hero-actions">
             <button class="feedback-primary-btn" onclick="openCreateTicketModal()">
-                Нове звернення
+                + Нове звернення
             </button>
 
             <button class="feedback-secondary-btn" onclick="exportTickets()">
-                XLSX реєстр
+                ↓ XLSX реєстр
             </button>
         </div>
     </section>
 
     <section class="feedback-kpi-grid">
-        <div class="feedback-kpi-card">
-            <div class="feedback-kpi-label">Усього звернень</div>
-            <div class="feedback-kpi-value">{{ data.summary.total }}</div>
-            <div class="feedback-kpi-note">за весь період клієнта</div>
+        <div class="feedback-kpi-card" style="--kpi-color:#84bd00;">
+            <div class="feedback-kpi-icon">
+                <svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+            </div>
+            <div>
+                <div class="feedback-kpi-label">Усього звернень</div>
+                <div class="feedback-kpi-value">{{ data.summary.total }}</div>
+                <div class="feedback-kpi-note">за весь період клієнта</div>
+            </div>
         </div>
 
-        <div class="feedback-kpi-card">
-            <div class="feedback-kpi-label">В роботі</div>
-            <div class="feedback-kpi-value">{{ data.summary.open }}</div>
-            <div class="feedback-kpi-note">очікують відповіді постачальника</div>
+        <div class="feedback-kpi-card" style="--kpi-color:#f59e0b;">
+            <div class="feedback-kpi-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </div>
+            <div>
+                <div class="feedback-kpi-label">В роботі</div>
+                <div class="feedback-kpi-value">{{ data.summary.open }}</div>
+                <div class="feedback-kpi-note">очікують відповіді постачальника</div>
+            </div>
         </div>
 
-        <div class="feedback-kpi-card warning">
-            <div class="feedback-kpi-label">Очікують моїх даних</div>
-            <div class="feedback-kpi-value">{{ data.summary.waiting_for_client }}</div>
-            <div class="feedback-kpi-note">SLA призупинено</div>
+        <div class="feedback-kpi-card" style="--kpi-color:#ef4444;">
+            <div class="feedback-kpi-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div>
+                <div class="feedback-kpi-label">Очікують моїх даних</div>
+                <div class="feedback-kpi-value">{{ data.summary.waiting_for_client }}</div>
+                <div class="feedback-kpi-note">потребують дій від вас</div>
+            </div>
         </div>
 
-        <div class="feedback-kpi-card">
-            <div class="feedback-kpi-label">Нові відповіді</div>
-            <div class="feedback-kpi-value">{{ data.summary.new_answers }}</div>
-            <div class="feedback-kpi-note">потребують перегляду</div>
+        <div class="feedback-kpi-card" style="--kpi-color:#22a447;">
+            <div class="feedback-kpi-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 10h8"/><path d="M8 14h5"/></svg>
+            </div>
+            <div>
+                <div class="feedback-kpi-label">Нові відповіді</div>
+                <div class="feedback-kpi-value">{{ data.summary.new_answers }}</div>
+                <div class="feedback-kpi-note">потребують перегляду</div>
+            </div>
         </div>
     </section>
 
     <section class="feedback-toolbar">
-        <input
-            type="text"
-            id="ticketSearch"
-            placeholder="Пошук за номером, темою, текстом або відповідальним"
-            onkeyup="filterTickets()"
-        >
+        <div class="feedback-search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input
+                type="text"
+                id="ticketSearch"
+                placeholder="Пошук за номером, темою, текстом або відповідальним"
+                onkeyup="filterTickets()"
+            >
+        </div>
 
         <select id="statusFilter" onchange="filterTickets()">
             <option value="all">Усі статуси</option>
@@ -822,15 +1188,31 @@
                 <option value="{{ topic.code }}">{{ topic.name }}</option>
             {% endfor %}
         </select>
+
+        <button type="button" class="feedback-filter-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+            Фільтри
+        </button>
+
+        <button type="button" class="feedback-reset-btn" onclick="resetTicketFilters()">Скинути</button>
     </section>
 
     <section class="tickets-panel">
         <h2 class="panel-title">Реєстр звернень</h2>
         <p class="panel-subtitle">
-            Усі звернення користувача, відповіді на них, статуси SLA, відповідальні менеджери та історія комунікації.
+            Усі звернення користувача, відповіді на них, статуси, відповідальні менеджери та історія комунікації.
         </p>
 
         <div class="ticket-list">
+            <div class="ticket-list-head">
+                <div>№ звернення / Тема</div>
+                <div>Дата створення</div>
+                <div>Відповідальний</div>
+                <div>Остання активність</div>
+                <div>Статус</div>
+                <div style="text-align:right;">Дії</div>
+            </div>
+
             {% for ticket in data.tickets %}
                 <article
                     class="ticket-card {{ ticket.status|replace('_', '-') }}"
@@ -847,38 +1229,79 @@
                         <div class="ticket-topic">{{ ticket.topic }}</div>
                     </div>
 
-                    <div class="ticket-compact-meta">
+                    <div class="ticket-meta-item">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                         <span>{{ ticket.created_at }}</span>
-                        <span class="ticket-meta-dot"></span>
-                        <span>{{ ticket.assignee }}</span>
-                        <span class="ticket-meta-dot"></span>
-                        <span>{{ ticket.sla_left }}</span>
-                        <span class="ticket-meta-dot"></span>
-                        <span>активність {{ ticket.last_activity }}</span>
+                    </div>
+
+                    <div class="ticket-meta-item">
+                        <svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+                        <div class="ticket-meta-stack">
+                            <strong>{{ ticket.assignee }}</strong>
+                            <span>Відповідальний</span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-meta-item">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                        <span>{{ ticket.last_activity }}</span>
                     </div>
 
                     <div class="ticket-status-area">
                         {% if ticket.status == "waiting_for_client" %}
                             <div class="ticket-primary-status">Очікує дані клієнта</div>
-                            <div class="ticket-secondary-status warning">SLA призупинено</div>
                         {% elif ticket.status == "in_progress" %}
                             <div class="ticket-primary-status">В роботі</div>
-                            <div class="ticket-secondary-status dark">SLA активний</div>
                         {% elif ticket.status == "answered" %}
                             <div class="ticket-primary-status">Відповідь надано</div>
-                            <div class="ticket-secondary-status">Виконано в SLA</div>
                         {% else %}
                             <div class="ticket-primary-status">{{ ticket.status_text }}</div>
                         {% endif %}
+                    </div>
 
-                        {% if ticket.has_new_answer %}
-                            <div class="ticket-secondary-status">Нова відповідь</div>
-                        {% endif %}
+                    <div class="ticket-actions">
+                        <button
+                            type="button"
+                            class="ticket-open-btn {% if ticket.has_new_answer %}has-update{% endif %}"
+                            onclick="event.stopPropagation(); openTicketModal('{{ ticket.id }}')"
+                        >
+                            Переглянути
 
-                        <div class="ticket-open-hint">Відкрити деталі →</div>
+                            {% if ticket.has_new_answer %}
+                                <span class="update-badge">1</span>
+                            {% endif %}
+                        </button>
+
+                        <button
+                            type="button"
+                            class="ticket-more-btn"
+                            onclick="event.stopPropagation(); openTicketModal('{{ ticket.id }}')"
+                            aria-label="Більше дій"
+                        >
+                            ⋮
+                        </button>
                     </div>
                 </article>
             {% endfor %}
+        </div>
+
+        <div class="feedback-pagination">
+            <label>
+                Показувати по:
+                <select class="feedback-page-size">
+                    <option>10</option>
+                    <option>20</option>
+                    <option>50</option>
+                </select>
+            </label>
+
+            <div>1–{{ data.tickets|length }} з {{ data.tickets|length }}</div>
+
+            <div class="feedback-pages">
+                <button class="feedback-page-btn" type="button">‹</button>
+                <button class="feedback-page-btn active" type="button">1</button>
+                <button class="feedback-page-btn" type="button">›</button>
+            </div>
         </div>
     </section>
 
@@ -1263,6 +1686,14 @@
                     ? "grid"
                     : "none";
         });
+    }
+
+    function resetTicketFilters() {
+        document.getElementById("ticketSearch").value = "";
+        document.getElementById("statusFilter").value = "all";
+        document.getElementById("slaFilter").value = "all";
+        document.getElementById("topicFilter").value = "all";
+        filterTickets();
     }
 
     function applyTopicTemplate() {
