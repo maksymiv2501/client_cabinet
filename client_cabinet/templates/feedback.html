@@ -648,7 +648,7 @@
     }
 
     .feedback-modal {
-        width: min(1100px, calc(100vw - 48px));
+        width: min(1360px, calc(100vw - 56px)); 
         max-height: min(88vh, 860px);
         background: #fff;
         border-radius: 28px;
@@ -1087,6 +1087,224 @@
             grid-column: span 1;
         }
     }
+    .ticket-detail-premium{
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+}
+
+.ticket-top-card{
+    background:#fff;
+    border:1px solid #e7ebf0;
+    border-radius:24px;
+    padding:24px;
+}
+
+.ticket-top-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:18px;
+}
+
+.premium-meta-item{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.premium-meta-item span{
+    font-size:12px;
+    color:#64748b;
+    font-weight:800;
+}
+
+.premium-meta-item strong{
+    font-size:16px;
+    color:#111827;
+    font-weight:900;
+}
+
+.premium-meta-item small{
+    color:#94a3b8;
+    font-size:12px;
+    font-weight:700;
+}
+
+.premium-secondary-grid{
+    margin-top:22px;
+    padding-top:20px;
+    border-top:1px solid #eef2f6;
+
+    display:flex;
+    gap:40px;
+}
+
+.premium-meta-inline{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.premium-meta-inline span{
+    font-size:12px;
+    color:#64748b;
+    font-weight:800;
+}
+
+.premium-meta-inline strong{
+    font-size:14px;
+    color:#111827;
+    font-weight:900;
+}
+
+.premium-status{
+    width:max-content;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:900;
+}
+
+.premium-status.warning{
+    background:#fff4d8;
+    color:#8a5a00;
+}
+
+.premium-status.active{
+    background:#eef4ff;
+    color:#2458d3;
+}
+
+.premium-status.done{
+    background:#eef8df;
+    color:#3f6a00;
+}
+
+.premium-process-card{
+    background:#fff;
+    border:1px solid #e7ebf0;
+    border-radius:24px;
+    padding:24px;
+}
+
+.premium-card-title{
+    font-size:18px;
+    font-weight:900;
+    color:#111827;
+    margin-bottom:22px;
+}
+
+.premium-timeline{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.premium-step{
+    flex:1;
+    position:relative;
+}
+
+.premium-step::after{
+    content:"";
+    position:absolute;
+    top:10px;
+    left:24px;
+    right:-24px;
+    height:2px;
+    background:#dbe3ea;
+}
+
+.premium-step:last-child::after{
+    display:none;
+}
+
+.premium-step-dot{
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    margin-bottom:14px;
+}
+
+.premium-step.done .premium-step-dot{
+    background:#84bd00;
+}
+
+.premium-step.warning .premium-step-dot{
+    background:#f59e0b;
+}
+
+.premium-step-content strong{
+    display:block;
+    margin-bottom:6px;
+    font-size:14px;
+    color:#111827;
+}
+
+.premium-step-content span{
+    color:#64748b;
+    font-size:13px;
+    line-height:1.45;
+}
+
+.premium-bottom-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 280px;
+    gap:22px;
+}
+
+.premium-communication,
+.premium-attachments{
+    background:#fff;
+    border:1px solid #e7ebf0;
+    border-radius:24px;
+    padding:24px;
+}
+
+.premium-attachment-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.premium-attachment-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:14px;
+    border-radius:16px;
+    background:#f8fafc;
+}
+
+.premium-attachment-item strong{
+    display:block;
+    margin-bottom:4px;
+    font-size:14px;
+}
+
+.premium-attachment-item span{
+    color:#64748b;
+    font-size:12px;
+    font-weight:700;
+}
+
+.attachment-download-btn{
+    width:36px;
+    height:36px;
+    border:0;
+    border-radius:12px;
+    background:#eef8df;
+    color:#5f8f00;
+    font-size:16px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.premium-reply{
+    margin-top:18px;
+}
 </style>
 
 <div class="dashboard-page feedback-page">
@@ -1323,195 +1541,197 @@
         </div>
 
         <div class="feedback-modal-body">
-            <div class="ticket-detail-grid">
+            <div class="ticket-detail-premium">
 
-                <div>
-                    <div class="ticket-info-box">
-                        <div class="ticket-info-grid">
-                            <div class="ticket-info-item">
-                                <span>Автор</span>
-                                <strong>{{ ticket.author }}</strong>
-                            </div>
+    <div class="ticket-top-card">
 
-                            <div class="ticket-info-item">
-                                <span>Відповідальний</span>
-                                <strong>{{ ticket.assignee }}</strong>
-                            </div>
+        <div class="ticket-top-grid">
 
-                            <div class="ticket-info-item">
-                                <span>Підрозділ</span>
-                                <strong>{{ ticket.department }}</strong>
-                            </div>
+            <div class="premium-meta-item">
+                <span>Автор</span>
+                <strong>{{ ticket.author }}</strong>
+                <small>{{ ticket.department }}</small>
+            </div>
 
-                            <div class="ticket-info-item">
-                                <span>Джерело</span>
-                                <strong>{{ ticket.source_system }}</strong>
-                            </div>
+            <div class="premium-meta-item">
+                <span>Відповідальний</span>
+                <strong>{{ ticket.assignee }}</strong>
+                <small>Фінансовий відділ</small>
+            </div>
 
-                            <div class="ticket-info-item">
-                                <span>Статус</span>
-                                <strong>{{ ticket.status_text }}</strong>
-                            </div>
+            <div class="premium-meta-item">
+                <span>Статус</span>
 
-                            <div class="ticket-info-item">
-                                <span>SLA</span>
-                                <strong>{{ ticket.sla_left }}</strong>
-                            </div>
-                        </div>
+                {% if ticket.status == "waiting_for_client" %}
+                    <div class="premium-status warning">
+                        Очікує дані від клієнта
                     </div>
-
-                    <div class="ticket-info-box">
-                        <h3>Історія обробки</h3>
-
-                        <div class="process-timeline">
-                            <div class="process-step done">
-                                <span></span>
-                                <div>
-                                    <strong>Звернення створено</strong>
-                                    <p>{{ ticket.created_at }}</p>
-                                </div>
-                            </div>
-
-                            <div class="process-step done">
-                                <span></span>
-                                <div>
-                                    <strong>Призначено відповідального</strong>
-                                    <p>{{ ticket.assignee }} · {{ ticket.department }}</p>
-                                </div>
-                            </div>
-
-                            {% if ticket.sla_state == "paused" %}
-                                <div class="process-step warning">
-                                    <span></span>
-                                    <div>
-                                        <strong>SLA призупинено</strong>
-                                        <p>Очікується додаткова інформація від клієнта</p>
-                                    </div>
-                                </div>
-                            {% elif ticket.sla_state == "done" %}
-                                <div class="process-step done">
-                                    <span></span>
-                                    <div>
-                                        <strong>Відповідь надано</strong>
-                                        <p>Звернення виконано в межах SLA</p>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="process-step active">
-                                    <span></span>
-                                    <div>
-                                        <strong>В роботі</strong>
-                                        <p>SLA активний · залишилось {{ ticket.sla_left }}</p>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        </div>
+                {% elif ticket.status == "in_progress" %}
+                    <div class="premium-status active">
+                        В роботі
                     </div>
-
-                    <h3>Комунікація</h3>
-
-                    <div class="timeline">
-                        {% for message in ticket.messages %}
-                            <div class="timeline-message {% if message.role == 'Клієнт' %}client{% else %}supplier{% endif %}">
-                                <div class="message-top">
-                                    <div>
-                                        <div class="message-author">{{ message.author }}</div>
-                                        <div class="message-role">{{ message.role }}</div>
-                                    </div>
-
-                                    <div class="message-time">{{ message.time }}</div>
-                                </div>
-
-                                <div class="message-text">{{ message.text }}</div>
-
-                                {% if message.attachments %}
-                                    <div class="attachment-list">
-                                        {% for file in message.attachments %}
-                                            <span class="attachment-pill">
-                                                {{ file.name }} · {{ file.size }}
-                                            </span>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+                {% else %}
+                    <div class="premium-status done">
+                        Відповідь надано
                     </div>
+                {% endif %}
+            </div>
 
-                    {% if ticket.status != "answered" %}
-                        <div class="reply-box">
-                            <h3>
-                                {% if ticket.client_action_required %}
-                                    Надати додаткову інформацію
-                                {% else %}
-                                    Додати повідомлення
-                                {% endif %}
-                            </h3>
+            <div class="premium-meta-item">
+                <span>Підрозділ</span>
+                <strong>{{ ticket.department }}</strong>
+            </div>
 
-                            <textarea placeholder="Введіть відповідь або додаткову інформацію"></textarea>
+            <div class="premium-meta-item">
+                <span>Кількість днів на розгляд</span>
+                <strong>{{ ticket.sla_days }} днів</strong>
+            </div>
 
-                            <div class="attachment-zone" data-zone="reply">
-                                <input type="file" class="reply-files" multiple hidden>
+        </div>
 
-                                <div class="attachment-content" onclick="this.closest('.attachment-zone').querySelector('input').click()">
-                                    <div class="attachment-icon">+</div>
-                                    <div class="attachment-title">Перетягніть файли або натисніть для вибору</div>
-                                    <div class="attachment-subtitle">PDF, XLSX, DOCX, JPG, PNG · до 20 МБ</div>
-                                </div>
+        <div class="premium-secondary-grid">
 
-                                <div class="file-list"></div>
-                            </div>
+            <div class="premium-meta-inline">
+                <span>Створено</span>
+                <strong>{{ ticket.created_at }}</strong>
+            </div>
 
-                            <div class="reply-actions">
-                                <button class="feedback-primary-btn">Надіслати</button>
-                            </div>
-                        </div>
-                    {% endif %}
+            <div class="premium-meta-inline">
+                <span>Остання активність</span>
+                <strong>{{ ticket.last_activity }}</strong>
+            </div>
+
+            <div class="premium-meta-inline">
+                <span>Пріоритет</span>
+                <strong>Середній</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="premium-process-card">
+
+        <div class="premium-card-title">
+            Історія обробки
+        </div>
+
+        <div class="premium-timeline">
+
+            <div class="premium-step done">
+                <div class="premium-step-dot"></div>
+
+                <div class="premium-step-content">
+                    <strong>Звернення створено</strong>
+                    <span>{{ ticket.created_at }}</span>
                 </div>
+            </div>
 
-                <aside>
-                    <div class="ticket-info-box">
-                        <h3>Контроль SLA</h3>
-                        <p class="panel-subtitle">
-                            {% if ticket.sla_state == "paused" %}
-                                SLA призупинено, оскільки постачальник очікує додаткову інформацію від клієнта.
-                            {% elif ticket.sla_state == "active" %}
-                                SLA активний. Звернення перебуває в роботі.
-                            {% else %}
-                                Звернення опрацьовано у межах SLA.
-                            {% endif %}
-                        </p>
+            <div class="premium-step done">
+                <div class="premium-step-dot"></div>
 
-                        <div class="ticket-info-grid">
-                            <div class="ticket-info-item">
-                                <span>Норма SLA</span>
-                                <strong>{{ ticket.sla_days }} днів</strong>
+                <div class="premium-step-content">
+                    <strong>Призначено відповідального</strong>
+                    <span>{{ ticket.assignee }}</span>
+                </div>
+            </div>
+
+            {% if ticket.sla_state == "paused" %}
+
+            <div class="premium-step warning">
+                <div class="premium-step-dot"></div>
+
+                <div class="premium-step-content">
+                    <strong>SLA призупинено</strong>
+                    <span>Очікується інформація від клієнта</span>
+                </div>
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="premium-bottom-grid">
+
+        <div class="premium-communication">
+
+            <div class="premium-card-title">
+                Комунікація
+            </div>
+
+            <div class="timeline">
+
+                {% for message in ticket.messages %}
+                    <div class="timeline-message {% if message.role == 'Клієнт' %}client{% else %}supplier{% endif %}">
+
+                        <div class="message-top">
+                            <div>
+                                <div class="message-author">{{ message.author }}</div>
+                                <div class="message-role">{{ message.role }}</div>
                             </div>
 
-                            <div class="ticket-info-item">
-                                <span>Поточний стан</span>
-                                <strong>{{ ticket.sla_left }}</strong>
-                            </div>
+                            <div class="message-time">{{ message.time }}</div>
                         </div>
-                    </div>
 
-                    <div class="ticket-info-box">
-                        <h3>Вкладення звернення</h3>
+                        <div class="message-text">
+                            {{ message.text }}
+                        </div>
 
-                        {% if ticket.attachments %}
-                            <div class="attachment-list">
-                                {% for file in ticket.attachments %}
-                                    <span class="attachment-pill">
-                                        {{ file.name }} · {{ file.size }}
-                                    </span>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <p class="panel-subtitle">Вкладення відсутні.</p>
-                        {% endif %}
                     </div>
-                </aside>
+                {% endfor %}
 
             </div>
+
+            {% if ticket.status != "answered" %}
+
+            <div class="reply-box premium-reply">
+
+                <textarea placeholder="Напишіть повідомлення або додайте коментар..."></textarea>
+
+                <div class="reply-actions">
+                    <button class="feedback-primary-btn">
+                        Надіслати
+                    </button>
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        <div class="premium-attachments">
+
+            <div class="premium-card-title">
+                Вкладення
+            </div>
+
+            <div class="premium-attachment-list">
+
+                {% for file in ticket.attachments %}
+                    <div class="premium-attachment-item">
+
+                        <div>
+                            <strong>{{ file.name }}</strong>
+                            <span>{{ file.size }}</span>
+                        </div>
+
+                        <button class="attachment-download-btn">
+                            ↓
+                        </button>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
         </div>
 
     </div>

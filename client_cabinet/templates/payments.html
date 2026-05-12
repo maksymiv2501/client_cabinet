@@ -23,8 +23,8 @@
         При ручному налаштуванні діапазону фільтру діє обмеження — дані не можуть бути старшими ніж 13 місяців.
     </div>
 
-    {# ===== SUMMARY КАРТКИ ===== #}
     <div class="payments-summary-grid">
+
         <div class="pay-kpi-card">
             <div class="pay-kpi-top">
                 <div class="pay-kpi-icon green">
@@ -77,9 +77,27 @@
             <div class="pay-kpi-value">{{ data.summary.payments_count }}</div>
             <div class="pay-kpi-sub" id="kpi-period-4">Останні 3 місяці</div>
         </div>
+
+        <div class="pay-kpi-card">
+            <div class="pay-kpi-top">
+                <div class="pay-kpi-icon" style="background:#ede9fe;color:#5b21b6;">
+                    <i class="ti ti-scale" aria-hidden="true"></i>
+                </div>
+                <span class="pay-kpi-label">Сальдо на сьогодні</span>
+            </div>
+            <div class="pay-kpi-value" style="color:{{ '#3a6d00' if data.summary.accounting_balance >= 0 else '#8a0000' }};">
+                {{ '+' if data.summary.accounting_balance > 0 else '' }}{{ "{:,.0f}".format(data.summary.accounting_balance).replace(",", " ") }}
+                <small>грн</small>
+            </div>
+            <div class="pay-kpi-sub">
+                {% if data.summary.accounting_balance > 0 %}Переплата
+                {% elif data.summary.accounting_balance < 0 %}Недоплата
+                {% else %}Збалансовано{% endif %}
+            </div>
+        </div>
+
     </div>
 
-    {# ===== ТАБЛИЦЯ ===== #}
     <section class="panel registry-panel">
         <div class="section-header">
             <div>
@@ -97,6 +115,8 @@
                 <option value="Нерознесено">Нерознесено</option>
             </select>
             <input type="text" id="payNumber"  placeholder="Номер платежу"  oninput="payUpdate()">
+            <input type="text" id="payInvoice" placeholder="Номер рахунку"   oninput="payUpdate()">
+            <input type="text" id="payIban"    placeholder="IBAN"            oninput="payUpdate()" class="wide-filter">
         </div>
 
         <div style="overflow-x:auto;">
@@ -173,7 +193,6 @@
 
 </div>
 
-{# ===== МОДАЛИ ===== #}
 <div id="payment-minimized-tray" class="payment-minimized-tray"></div>
 <div id="payment-desktop" class="payment-desktop hidden">
     {% for payment in data.payments %}
@@ -279,120 +298,67 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/uk.js"></script>
 <script>
-var payFrom='', payTo='';
-
-function toYM(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-
-function fmtDate(d){
-    return d.getDate().toString().padStart(2,'0')+'.'+
-           (d.getMonth()+1).toString().padStart(2,'0')+'.'+
-           d.getFullYear();
-}
-
+var payFrom='',payTo='';
+function toYM(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function fmtDate(d){return d.getDate().toString().padStart(2,'0')+'.'+(d.getMonth()+1).toString().padStart(2,'0')+'.'+d.getFullYear();}
 function updateKpiPeriod(dates){
-    var text = dates && dates[0] && dates[1]
-        ? fmtDate(dates[0]) + ' — ' + fmtDate(dates[1])
-        : 'Останні 3 місяці';
-    ['kpi-period-1','kpi-period-2','kpi-period-3','kpi-period-4'].forEach(function(id){
-        var el = document.getElementById(id);
-        if(el) el.textContent = text;
-    });
+    var text=dates&&dates[0]&&dates[1]?fmtDate(dates[0])+' — '+fmtDate(dates[1]):'Останні 3 місяці';
+    ['kpi-period-1','kpi-period-2','kpi-period-3','kpi-period-4'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=text;});
 }
-
-function parseDue(str){
-    if(!str||str.length<10) return '';
-    var p=str.split('.'); return p.length===3?p[2]+'-'+p[1]:'';
-}
-
+function parseDue(str){if(!str||str.length<10)return '';var p=str.split('.');return p.length===3?p[2]+'-'+p[1]:'';}
 function paginate(rows,pv,szId,cntId,pagId){
     var pp=Number(document.getElementById(szId).value||25);
-    var vis=rows.filter(function(r){ return r.getAttribute('data-visible')!=='false'; });
+    var vis=rows.filter(function(r){return r.getAttribute('data-visible')!=='false';});
     var tot=vis.length,pages=Math.max(1,Math.ceil(tot/pp));
-    pv.p=Math.min(pv.p,pages);
-    var s=(pv.p-1)*pp,e=s+pp;
-    rows.forEach(function(r){ r.style.display='none'; });
-    vis.forEach(function(r,i){ r.style.display=(i>=s&&i<e)?'':'none'; });
+    pv.p=Math.min(pv.p,pages);var s=(pv.p-1)*pp,e=s+pp;
+    rows.forEach(function(r){r.style.display='none';});
+    vis.forEach(function(r,i){r.style.display=(i>=s&&i<e)?'':'none';});
     document.getElementById(cntId).textContent=tot?'Показано '+(s+1)+'–'+Math.min(e,tot)+' з '+tot:'Нічого не знайдено';
-    var pg=document.getElementById(pagId); pg.innerHTML='';
-    if(pages<=1) return;
-    function mkb(lbl,page,act,dis){
-        var b=document.createElement('button'); b.textContent=lbl;
-        b.style.cssText='padding:5px 10px;border-radius:8px;border:1px solid '+(act?'#84bd00':'#e2e6ea')+';background:'+(act?'#84bd00':'#fff')+';color:'+(act?'#1a2e00':'#344054')+';font-weight:700;font-size:13px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?'.4':'1');
-        if(!dis) b.onclick=function(){ pv.p=page; paginate(rows,pv,szId,cntId,pagId); };
-        return b;
-    }
+    var pg=document.getElementById(pagId);pg.innerHTML='';if(pages<=1)return;
+    function mkb(lbl,page,act,dis){var b=document.createElement('button');b.textContent=lbl;b.style.cssText='padding:5px 10px;border-radius:8px;border:1px solid '+(act?'#84bd00':'#e2e6ea')+';background:'+(act?'#84bd00':'#fff')+';color:'+(act?'#1a2e00':'#344054')+';font-weight:700;font-size:13px;cursor:'+(dis?'default':'pointer')+';opacity:'+(dis?'.4':'1');if(!dis)b.onclick=function(){pv.p=page;paginate(rows,pv,szId,cntId,pagId);};return b;}
     pg.appendChild(mkb('←',pv.p-1,false,pv.p===1));
-    for(var p=1;p<=pages;p++){
-        if(pages>7&&p>2&&p<pages-1&&Math.abs(p-pv.p)>1){
-            if(p===3||p===pages-2){var sp=document.createElement('span');sp.textContent='…';sp.style.padding='5px 4px';pg.appendChild(sp);}
-            continue;
-        }
-        pg.appendChild(mkb(p,p,p===pv.p,false));
-    }
+    for(var p=1;p<=pages;p++){if(pages>7&&p>2&&p<pages-1&&Math.abs(p-pv.p)>1){if(p===3||p===pages-2){var sp=document.createElement('span');sp.textContent='…';sp.style.padding='5px 4px';pg.appendChild(sp);}continue;}pg.appendChild(mkb(p,p,p===pv.p,false));}
     pg.appendChild(mkb('→',pv.p+1,false,pv.p===pages));
 }
-
 var payPage={p:1};
-function payUpdate(){ payPage.p=1; payRender(); }
+function payUpdate(){payPage.p=1;payRender();}
 function payRender(){
-    var status =(document.getElementById('payStatus').value||'');
-    var number =(document.getElementById('payNumber').value||'').toLowerCase().trim();
+    var status=(document.getElementById('payStatus').value||'');
+    var number=(document.getElementById('payNumber').value||'').toLowerCase().trim();
     var invoice=(document.getElementById('payInvoice').value||'').toLowerCase().trim();
-    var iban   =(document.getElementById('payIban').value||'').toLowerCase().trim();
+    var iban=(document.getElementById('payIban').value||'').toLowerCase().trim();
     var rows=Array.from(document.querySelectorAll('.pay-row'));
     rows.forEach(function(r){
         var ym=parseDue(r.getAttribute('data-date'));
-        var ok=(!payFrom||ym>=payFrom)&&(!payTo||ym<=payTo)
-            &&(!status ||r.getAttribute('data-status')===status)
-            &&(!number ||r.getAttribute('data-number').toLowerCase().includes(number))
-            &&(!invoice||r.getAttribute('data-invoices').toLowerCase().includes(invoice))
-            &&(!iban   ||r.getAttribute('data-iban').toLowerCase().includes(iban));
+        var ok=(!payFrom||ym>=payFrom)&&(!payTo||ym<=payTo)&&(!status||r.getAttribute('data-status')===status)&&(!number||r.getAttribute('data-number').toLowerCase().includes(number))&&(!invoice||r.getAttribute('data-invoices').toLowerCase().includes(invoice))&&(!iban||r.getAttribute('data-iban').toLowerCase().includes(iban));
         r.setAttribute('data-visible',ok?'true':'false');
     });
     paginate(rows,payPage,'payPageSize','payCount','payPagination');
 }
-
 var pmZ=2001;
-function syncPD(){ var d=document.getElementById('payment-desktop'); d.classList.toggle('hidden',!document.querySelector('.payment-modal-window:not(.hidden)')); document.body.classList.toggle('modal-open',!!document.querySelector('.payment-modal-window:not(.hidden):not(.is-minimized)')); }
-function pmF(m){ pmZ++; m.style.zIndex=pmZ; }
-function openPaymentModal(id){ var m=document.getElementById(id); if(!m) return; document.getElementById('payment-desktop').classList.remove('hidden'); m.classList.remove('hidden','is-minimized'); pmF(m); pmRm(id); syncPD(); }
-function closePaymentModal(id){ var m=document.getElementById(id); if(!m) return; m.classList.add('hidden'); m.classList.remove('is-minimized','is-fullscreen'); pmRm(id); syncPD(); }
-function minimizePaymentModal(id){ var m=document.getElementById(id); if(!m) return; m.classList.add('is-minimized'); pmAdd(id,m.dataset.title||id); syncPD(); }
-function restorePaymentModal(id){ var m=document.getElementById(id); if(!m) return; document.getElementById('payment-desktop').classList.remove('hidden'); m.classList.remove('is-minimized','hidden'); pmF(m); pmRm(id); syncPD(); }
-function toggleFullscreenPaymentModal(id){ var m=document.getElementById(id); if(!m) return; m.classList.toggle('is-fullscreen'); pmF(m); }
-function pmAdd(id,title){ var t=document.getElementById('payment-minimized-tray'); if(document.getElementById('pmm-'+id)) return; var c=document.createElement('button'); c.type='button'; c.id='pmm-'+id; c.className='payment-minimized-card'; c.textContent=title; c.onclick=function(){ restorePaymentModal(id); }; t.appendChild(c); }
-function pmRm(id){ var c=document.getElementById('pmm-'+id); if(c) c.remove(); }
-
+function syncPD(){var d=document.getElementById('payment-desktop');d.classList.toggle('hidden',!document.querySelector('.payment-modal-window:not(.hidden)'));document.body.classList.toggle('modal-open',!!document.querySelector('.payment-modal-window:not(.hidden):not(.is-minimized)'));}
+function pmF(m){pmZ++;m.style.zIndex=pmZ;}
+function openPaymentModal(id){var m=document.getElementById(id);if(!m)return;document.getElementById('payment-desktop').classList.remove('hidden');m.classList.remove('hidden','is-minimized');pmF(m);pmRm(id);syncPD();}
+function closePaymentModal(id){var m=document.getElementById(id);if(!m)return;m.classList.add('hidden');m.classList.remove('is-minimized','is-fullscreen');pmRm(id);syncPD();}
+function minimizePaymentModal(id){var m=document.getElementById(id);if(!m)return;m.classList.add('is-minimized');pmAdd(id,m.dataset.title||id);syncPD();}
+function restorePaymentModal(id){var m=document.getElementById(id);if(!m)return;document.getElementById('payment-desktop').classList.remove('hidden');m.classList.remove('is-minimized','hidden');pmF(m);pmRm(id);syncPD();}
+function toggleFullscreenPaymentModal(id){var m=document.getElementById(id);if(!m)return;m.classList.toggle('is-fullscreen');pmF(m);}
+function pmAdd(id,title){var t=document.getElementById('payment-minimized-tray');if(document.getElementById('pmm-'+id))return;var c=document.createElement('button');c.type='button';c.id='pmm-'+id;c.className='payment-minimized-card';c.textContent=title;c.onclick=function(){restorePaymentModal(id);};t.appendChild(c);}
+function pmRm(id){var c=document.getElementById('pmm-'+id);if(c)c.remove();}
 document.querySelectorAll('.payment-modal-window').forEach(function(m){
-    m.addEventListener('mousedown',function(){ pmF(m); });
+    m.addEventListener('mousedown',function(){pmF(m);});
     var h=m.querySelector('.payment-modal-header');
     h.addEventListener('mousedown',function(e){
-        if(e.target.closest('button')||m.classList.contains('is-fullscreen')) return;
-        pmF(m);
-        var r=m.getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;
-        function mv(me){ m.style.left=(me.clientX-dx)+'px'; m.style.top=(me.clientY-dy)+'px'; m.style.transform='none'; }
-        function up(){ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); }
-        document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+        if(e.target.closest('button')||m.classList.contains('is-fullscreen'))return;
+        pmF(m);var r=m.getBoundingClientRect(),dx=e.clientX-r.left,dy=e.clientY-r.top;
+        function mv(me){m.style.left=(me.clientX-dx)+'px';m.style.top=(me.clientY-dy)+'px';m.style.transform='none';}
+        function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);}
+        document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
     });
 });
-
-document.addEventListener('keydown',function(e){
-    if(e.key!=='Escape') return;
-    var open=Array.from(document.querySelectorAll('.payment-modal-window:not(.hidden):not(.is-minimized)')).sort(function(a,b){ return (Number(b.style.zIndex)||0)-(Number(a.style.zIndex)||0); });
-    if(open.length) closePaymentModal(open[0].id);
-});
-
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;var open=Array.from(document.querySelectorAll('.payment-modal-window:not(.hidden):not(.is-minimized)')).sort(function(a,b){return(Number(b.style.zIndex)||0)-(Number(a.style.zIndex)||0);});if(open.length)closePaymentModal(open[0].id);});
 document.addEventListener('DOMContentLoaded',function(){
-    flatpickr('#payDateRange',{
-        mode:'range', locale:'uk', dateFormat:'d.m.Y',
-        onChange:function(dates){
-            payFrom = dates[0] ? toYM(dates[0]) : '';
-            payTo   = dates[1] ? toYM(dates[1]) : '';
-            updateKpiPeriod(dates.length===2 ? dates : null);
-            payUpdate();
-        },
-        onReady:function(){ updateKpiPeriod(null); }
-    });
+    flatpickr('#payDateRange',{mode:'range',locale:'uk',dateFormat:'d.m.Y',onChange:function(dates){payFrom=dates[0]?toYM(dates[0]):'';payTo=dates[1]?toYM(dates[1]):'';updateKpiPeriod(dates.length===2?dates:null);payUpdate();},onReady:function(){updateKpiPeriod(null);}});
     payRender();
 });
 </script>
