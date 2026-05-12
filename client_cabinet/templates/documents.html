@@ -2,471 +2,1004 @@
 
 {% from "components/page_hero.html" import page_hero %}
 
-{% block title %}Документи на підпис{% endblock %}
+{% block title %}Документи{% endblock %}
 
 {% block page_header %}
 {{ page_hero(
-    "Документи на підпис",
-    "Договори, додатки та додаткові угоди, які потребують підписання клієнтом"
+    "Документи",
+    "Підписуйте, переглядайте та контролюйте документи в одному місці"
 ) }}
-{% endblock %} 
+{% endblock %}
 
 {% block content %}
 
 <style>
-    .documents-page {
+    .documents-page-v2 {
+        --doc-green: var(--green, #84bd00);
+        --doc-ink: #0f172a;
+        --doc-muted: #64748b;
+        --doc-line: #e5e7eb;
+        --doc-soft: #f8fafc;
+        --doc-sidebar: #0b111c;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .documents-main-v2 {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 18px;
+        min-width: 0;
     }
 
-    .documents-hero {
-        background: #111827;
-        color: #fff;
-        border-radius: 28px;
-        padding: 28px;
-        border-left: 7px solid #84bd00;
-
+    .documents-top-v2 {
         display: grid;
-        grid-template-columns: 1.35fr 0.8fr;
-        gap: 24px;
-        align-items: center;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 18px;
+        align-items: stretch;
     }
 
-    .documents-hero h2 {
+    .documents-intro-v2 {
+        background: #fff;
+        border: 1px solid var(--doc-line);
+        border-radius: 26px;
+        padding: 24px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.055);
+    }
+
+    .documents-intro-v2 h2 {
         margin: 0 0 8px;
+        color: var(--doc-ink);
         font-size: 28px;
+        line-height: 1.12;
+        letter-spacing: -0.04em;
     }
 
-    .documents-hero p {
+    .documents-intro-v2 p {
         margin: 0;
-        color: rgba(255,255,255,0.68);
-        line-height: 1.5;
+        max-width: 780px;
+        color: var(--doc-muted);
+        font-size: 14px;
+        font-weight: 650;
+        line-height: 1.55;
     }
 
-    .secure-box {
-        background: rgba(255,255,255,0.08);
-        border-radius: 20px;
-        padding: 20px;
+    .documents-secure-v2 {
+        position: relative;
+        overflow: hidden;
+        min-height: 118px;
+        border-radius: 26px;
+        padding: 22px 22px 22px 76px;
+        color: #fff;
+        background:
+            radial-gradient(circle at 88% 12%, rgba(132, 189, 0, 0.32), transparent 32%),
+            linear-gradient(135deg, #101827 0%, #05070c 100%);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
     }
 
-    .secure-box span {
-        display: block;
-        color: rgba(255,255,255,0.62);
-        font-size: 12px;
+    .documents-secure-v2::before {
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 26px;
+        width: 38px;
+        height: 38px;
+        border-radius: 15px;
+        background: rgba(132, 189, 0, 0.16);
+        border: 1px solid rgba(132, 189, 0, 0.38);
+    }
+
+    .documents-secure-v2::after {
+        content: "✓";
+        position: absolute;
+        left: 34px;
+        top: 30px;
+        color: var(--doc-green);
+        font-size: 21px;
         font-weight: 900;
-        margin-bottom: 6px;
+    }
+
+    .documents-secure-v2 span {
+        display: block;
+        margin-bottom: 7px;
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
     }
 
-    .secure-box strong {
+    .documents-secure-v2 strong {
         display: block;
-        font-size: 18px;
-    }
-
-    .documents-kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
-    }
-
-    .documents-kpi-card {
-        background: #fff;
-        border-radius: 22px;
-        padding: 22px;
-        border: 1px solid #e5e7eb;
-        border-left: 5px solid #84bd00;
-        box-shadow: 0 12px 32px rgba(15,23,42,0.05);
-    }
-
-    .documents-kpi-card.warning {
-        border-left-color: #f59e0b;
-    }
-
-    .documents-kpi-card.danger {
-        border-left-color: #ef4444;
-    }
-
-    .documents-kpi-label {
-        color: #64748b;
-        font-size: 13px;
-        font-weight: 900;
-        margin-bottom: 10px;
-    }
-
-    .documents-kpi-value {
-        color: #111827;
-        font-size: 32px;
-        font-weight: 900;
-        line-height: 1.1;
-    }
-
-    .documents-kpi-note {
-        margin-top: 8px;
-        color: #64748b;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .documents-toolbar {
-        background: #fff;
-        border-radius: 24px;
-        padding: 20px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 10px 28px rgba(15,23,42,0.04);
-
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-    }
-
-    .documents-toolbar input,
-    .documents-toolbar select {
-        height: 44px;
-        border: 1px solid #d1d5db;
-        border-radius: 14px;
-        padding: 0 14px;
-        background: #fff;
-        font-weight: 800;
-    }
-
-    .documents-toolbar input {
-        min-width: 320px;
-        flex: 1;
-    }
-
-    .documents-panel {
-        background: #fff;
-        border-radius: 28px;
-        padding: 26px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 14px 35px rgba(15,23,42,0.06);
-    }
-
-    .documents-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        max-height: 640px;
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-
-    .document-card {
-        display: grid;
-        grid-template-columns: minmax(320px, 1.3fr) minmax(420px, 1fr) 240px;
-        gap: 20px;
-        align-items: center;
-
-        border: 1px solid #e5e7eb;
-        border-left: 5px solid #84bd00;
-        border-radius: 20px;
-        padding: 16px 18px;
-        background: #fff;
-        transition: 0.18s;
-    }
-
-    .document-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 30px rgba(15,23,42,0.08);
-    }
-
-    .document-card.waiting {
-        border-left-color: #f59e0b;
-    }
-
-    .document-card.urgent {
-        border-left-color: #ef4444;
-    }
-
-    .document-card.signed {
-        border-left-color: #84bd00;
-    }
-
-    .document-number {
-        font-size: 17px;
-        font-weight: 900;
-        color: #111827;
-        margin-bottom: 4px;
-    }
-
-    .document-title {
-        font-size: 15px;
-        font-weight: 900;
-        margin-bottom: 5px;
-    }
-
-    .document-note {
-        color: #64748b;
-        font-size: 12px;
-        line-height: 1.35;
-    }
-
-    .document-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
-        align-items: center;
-
-        color: #64748b;
-        font-size: 13px;
-        font-weight: 800;
+        max-width: 250px;
+        font-size: 14px;
         line-height: 1.45;
     }
 
-    .meta-dot {
+    .documents-kpis-v2 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .doc-kpi-v2 {
+        position: relative;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+        min-height: 112px;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid var(--doc-line);
+        border-radius: 24px;
+        box-shadow: 0 16px 42px rgba(15, 23, 42, 0.052);
+    }
+
+    .doc-kpi-v2::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
         width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: #cbd5e1;
+        background: var(--accent, var(--doc-green));
     }
 
-    .document-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 8px;
+    .doc-kpi-icon-v2 {
+        width: 52px;
+        height: 52px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--accent, var(--doc-green)) 12%, white);
+        color: var(--accent, var(--doc-green));
     }
 
-    .document-status {
-        font-size: 15px;
+    .doc-kpi-icon-v2 svg {
+        width: 25px;
+        height: 25px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .doc-kpi-label-v2 {
+        margin-bottom: 5px;
+        color: #334155;
+        font-size: 13px;
         font-weight: 900;
-        text-align: right;
-        color: #111827;
     }
 
-    .document-status-pill {
-        padding: 6px 10px;
+    .doc-kpi-value-v2 {
+        color: var(--doc-ink);
+        font-size: 32px;
+        line-height: 1;
+        font-weight: 950;
+        letter-spacing: -0.04em;
+    }
+
+    .doc-kpi-note-v2 {
+        margin-top: 7px;
+        color: var(--doc-muted);
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+    .documents-toolbar-v2 {
+        position: sticky;
+        top: 12px;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) 150px 140px 165px auto auto;
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid var(--doc-line);
+        border-radius: 24px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+        backdrop-filter: blur(12px);
+    }
+
+    .doc-search-v2,
+    .doc-select-v2,
+    .doc-filter-btn-v2,
+    .doc-reset-v2 {
+        height: 46px;
+        border-radius: 15px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 850;
+    }
+
+    .doc-search-wrap-v2 { position: relative; }
+
+    .doc-search-wrap-v2 svg {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        transform: translateY(-50%);
+        color: #64748b;
+    }
+
+    .doc-search-v2 {
+        width: 100%;
+        border: 1px solid #d9dee7;
+        padding: 0 16px 0 44px;
+        background: #fff;
+        color: var(--doc-ink);
+        outline: none;
+    }
+
+    .doc-search-v2:focus,
+    .doc-select-v2:focus {
+        border-color: var(--doc-green);
+        box-shadow: 0 0 0 4px rgba(132, 189, 0, 0.12);
+    }
+
+    .doc-select-v2 {
+        width: 100%;
+        border: 1px solid #d9dee7;
+        padding: 0 13px;
+        background: #fff;
+        color: var(--doc-ink);
+    }
+
+    .doc-filter-btn-v2 {
+        display: inline-flex;
+        gap: 9px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d9dee7;
+        padding: 0 16px;
+        background: #fff;
+        color: var(--doc-ink);
+        cursor: pointer;
+    }
+
+    .doc-filter-btn-v2 svg { width: 18px; height: 18px; }
+
+    .doc-reset-v2 {
+        border: 0;
+        padding: 0 6px;
+        color: #4d8b00;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .doc-active-filters-v2 {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: -6px;
+    }
+
+    .doc-filter-chip-v2 {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 30px;
+        padding: 0 12px;
         border-radius: 999px;
+        background: #eef8df;
+        color: #3f7500;
+        font-size: 12px;
+        font-weight: 850;
+    }
+
+    .documents-registry-v2 {
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--doc-line);
+        border-radius: 26px;
+        box-shadow: 0 20px 55px rgba(15, 23, 42, 0.06);
+    }
+
+    .registry-head-v2 {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 22px 22px 14px;
+    }
+
+    .registry-title-v2 h2 {
+        margin: 0;
+        color: var(--doc-ink);
+        font-size: 20px;
+        letter-spacing: -0.03em;
+    }
+
+    .registry-title-v2 span {
+        color: var(--doc-muted);
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .registry-actions-v2 {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .view-toggle-v2 {
+        display: inline-flex;
+        overflow: hidden;
+        border: 1px solid #d9dee7;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .view-toggle-v2 button {
+        width: 44px;
+        height: 40px;
+        border: 0;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+    }
+
+    .view-toggle-v2 button.active {
+        background: #fff;
+        color: var(--doc-green);
+        box-shadow: inset 0 0 0 1px rgba(132, 189, 0, 0.55);
+    }
+
+    .view-toggle-v2 svg { width: 19px; height: 19px; }
+
+    .doc-create-btn-v2 {
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #8fd000, #5ca800);
+        color: #fff;
+        font-weight: 950;
+        cursor: pointer;
+        box-shadow: 0 12px 22px rgba(99, 178, 0, 0.28);
+    }
+
+    .doc-create-btn-v2 svg { width: 18px; height: 18px; }
+
+    .documents-table-wrap-v2 { overflow-x: auto; }
+
+    .documents-table-v2 {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 940px;
+    }
+
+    .documents-table-v2 th {
+        padding: 14px 16px;
+        color: #475569;
+        background: #fff;
+        border-top: 1px solid var(--doc-line);
+        border-bottom: 1px solid var(--doc-line);
         font-size: 12px;
         font-weight: 900;
+        text-align: left;
         white-space: nowrap;
     }
 
-    .document-status-pill.waiting {
-        background: #fff2cc;
-        color: #7a5200;
+    .documents-table-v2 td {
+        padding: 16px;
+        border-bottom: 1px solid #edf0f4;
+        color: var(--doc-ink);
+        font-size: 13px;
+        vertical-align: middle;
     }
 
-    .document-status-pill.urgent {
-        background: #ffe1e1;
-        color: #8a0000;
+    .documents-table-v2 tr {
+        transition: 0.16s ease;
     }
 
-    .document-status-pill.signed {
-        background: #eef8d9;
-        color: #3a6d00;
+    .documents-table-v2 tbody tr:hover {
+        background: #fbfcfd;
     }
 
-    .document-btn-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
+    .documents-table-v2 tbody tr td:first-child {
+        border-left: 4px solid var(--row-accent, var(--doc-green));
     }
 
-    .document-btn {
-        height: 34px;
-        padding: 0 12px;
-        border-radius: 999px;
-        border: 0;
-        text-decoration: none;
-        background: #111827;
-        color: #fff;
+    .doc-check-v2 {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--doc-green);
+    }
+
+    .doc-name-cell-v2 {
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        min-width: 240px;
+    }
+
+    .doc-type-icon-v2 {
+        position: relative;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: end center;
+        padding-bottom: 7px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0;
+        color: var(--row-accent, var(--doc-green));
+        font-size: 9px;
+        font-weight: 950;
+        text-transform: uppercase;
+        box-shadow: inset 0 -10px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    .doc-type-icon-v2::before {
+        content: "";
+        position: absolute;
+        left: 11px;
+        top: 8px;
+        width: 17px;
+        height: 21px;
+        border-radius: 3px;
+        background: currentColor;
+        opacity: 0.16;
+    }
+
+    .doc-type-icon-v2::after {
+        content: "";
+        position: absolute;
+        right: 12px;
+        top: 8px;
+        border-left: 6px solid transparent;
+        border-top: 6px solid currentColor;
+        opacity: 0.32;
+    }
+
+    .doc-type-icon-v2.pdf { color: #ef4444; }
+    .doc-type-icon-v2.doc { color: #2563eb; }
+    .doc-type-icon-v2.pages { color: #22a447; }
+
+    .doc-name-v2 {
+        color: var(--doc-ink);
+        font-weight: 950;
+        line-height: 1.25;
+    }
+
+    .doc-sub-v2 {
+        margin-top: 4px;
+        color: var(--doc-muted);
         font-size: 12px;
-        font-weight: 900;
+        font-weight: 700;
+        line-height: 1.35;
+    }
 
+    .doc-strong-v2 { font-weight: 950; }
+
+    .doc-small-v2 {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .doc-deadline-v2 strong {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 950;
+    }
+
+    .doc-deadline-v2 span {
+        font-size: 12px;
+        font-weight: 850;
+        color: var(--deadline-color, #64748b);
+    }
+
+    .doc-status-chip-v2 {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 11px;
+        border-radius: 999px;
+        color: var(--chip-color);
+        background: var(--chip-bg);
+        font-size: 12px;
+        font-weight: 950;
+        white-space: nowrap;
+    }
+
+    .doc-actions-v2 {
+        display: flex;
+        justify-content: flex-end;
+        gap: 9px;
+        align-items: center;
+        white-space: nowrap;
+    }
+
+    .doc-action-primary-v2,
+    .doc-action-secondary-v2,
+    .doc-more-v2 {
+        height: 36px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 950;
+        cursor: pointer;
+    }
+
+    .doc-action-primary-v2 {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        min-width: 96px;
+        border: 0;
+        padding: 0 16px;
+        background: linear-gradient(180deg, #83c800, #5da600);
+        color: #fff;
+        text-align: center;
     }
 
-    .document-btn.green {
-        background: #84bd00;
-        color: #000;
+    .doc-action-secondary-v2 {
+        border: 1px solid #d9dee7;
+        padding: 0 14px;
+        background: #fff;
+        color: var(--doc-ink);
     }
 
-    @media (max-width: 1200px) {
-        .documents-hero,
-        .documents-kpi-grid,
-        .document-card {
-            grid-template-columns: 1fr;
-        }
+    .doc-more-v2 {
+        width: 34px;
+        border: 0;
+        background: transparent;
+        color: #0f172a;
+        font-size: 20px;
+        line-height: 1;
+    }
 
-        .document-actions {
-            align-items: flex-start;
-        }
+    .registry-footer-v2 {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 16px 22px 20px;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 850;
+    }
 
-        .document-btn-row {
-            justify-content: flex-start;
-        }
+    .doc-page-size-v2 {
+        height: 38px;
+        margin-left: 8px;
+        padding: 0 12px;
+        border: 1px solid #d9dee7;
+        border-radius: 12px;
+        background: #fff;
+        font-weight: 850;
+    }
+
+    .doc-pagination-v2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .doc-page-btn-v2 {
+        min-width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 0;
+        border-radius: 11px;
+        background: transparent;
+        color: #334155;
+        font-weight: 900;
+    }
+
+    .doc-page-btn-v2.active {
+        background: #eaf7dc;
+        color: #3f7500;
+    }
+
+
+    .documents-registry-v2.card-view .documents-table-v2,
+    .documents-registry-v2.card-view .documents-table-v2 thead,
+    .documents-registry-v2.card-view .documents-table-v2 tbody {
+        display: block;
+        min-width: 0;
+    }
+
+    .documents-registry-v2.card-view .documents-table-v2 thead { display: none; }
+
+    .documents-registry-v2.card-view .documents-table-v2 tbody {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+        gap: 14px;
+        padding: 0 22px 22px;
+    }
+
+    .documents-registry-v2.card-view .documents-table-v2 tr {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 10px 12px;
+        padding: 16px;
+        border: 1px solid #edf0f4;
+        border-left: 4px solid var(--row-accent, var(--doc-green));
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.045);
+    }
+
+    .documents-registry-v2.card-view .documents-table-v2 td {
+        display: block;
+        padding: 0;
+        border: 0;
+    }
+
+    .documents-registry-v2.card-view .documents-table-v2 td:first-child { border-left: 0; }
+    .documents-registry-v2.card-view .documents-table-v2 td:nth-child(n+3) { grid-column: 2; }
+    .documents-registry-v2.card-view .documents-table-v2 td:nth-child(3)::before { content: "Тип: "; color: #64748b; }
+    .documents-registry-v2.card-view .documents-table-v2 td:nth-child(4)::before { content: "Договір: "; color: #64748b; }
+    .documents-registry-v2.card-view .documents-table-v2 td:nth-child(5)::before { content: "Створено: "; color: #64748b; }
+    .documents-registry-v2.card-view .documents-table-v2 td:nth-child(6)::before { content: "Термін: "; color: #64748b; }
+    .documents-registry-v2.card-view .doc-actions-v2 { justify-content: flex-start; margin-top: 6px; }
+
+    .documents-side-v2 {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .doc-side-card-v2 {
+        background: #fff;
+        border: 1px solid var(--doc-line);
+        border-radius: 24px;
+        padding: 22px;
+        box-shadow: 0 16px 42px rgba(15, 23, 42, 0.052);
+    }
+
+    .doc-side-card-v2 h3 {
+        margin: 0 0 17px;
+        color: var(--doc-ink);
+        font-size: 17px;
+        letter-spacing: -0.02em;
+    }
+
+    .doc-tip-v2,
+    .doc-checkline-v2 {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+    }
+
+    .doc-tip-v2 + .doc-tip-v2 {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #eef2f7;
+    }
+
+    .doc-tip-icon-v2,
+    .doc-check-icon-v2 {
+        width: 32px;
+        height: 32px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: #f0f8e4;
+        color: #4d8b00;
+        font-size: 15px;
+        font-weight: 950;
+    }
+
+    .doc-tip-v2 strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--doc-ink);
+        font-size: 13px;
+        font-weight: 950;
+    }
+
+    .doc-tip-v2 p {
+        margin: 0;
+        color: #475569;
+        font-size: 12.5px;
+        font-weight: 650;
+        line-height: 1.45;
+    }
+
+    .doc-checkline-v2 {
+        align-items: center;
+        margin-top: 12px;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .doc-check-icon-v2 {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .signed-upload-note-v2 {
+        margin-top: 6px;
+        color: #4d8b00;
+        font-size: 11px;
+        font-weight: 850;
+        text-align: right;
+    }
+
+    @media (max-width: 1500px) {
+        .documents-page-v2 { grid-template-columns: 1fr; }
+        .documents-side-v2 { display: none; }
+    }
+
+    @media (max-width: 1180px) {
+        .documents-top-v2,
+        .documents-kpis-v2 { grid-template-columns: 1fr 1fr; }
+        .documents-toolbar-v2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 760px) {
+        .documents-top-v2,
+        .documents-kpis-v2,
+        .documents-toolbar-v2 { grid-template-columns: 1fr; }
+        .registry-head-v2,
+        .registry-footer-v2 { align-items: flex-start; flex-direction: column; }
+        .doc-create-btn-v2 { width: 100%; justify-content: center; }
     }
 </style>
 
-<div class="dashboard-page documents-page">
+{% set waiting_count = data.summary.waiting_signature %}
+{% set urgent_count = data.summary.urgent %}
+{% set signed_count = data.summary.signed %}
 
-    <section class="documents-hero">
-        <div>
-            <h2>Документи, які потребують підписання</h2>
-            <p>
-                У цьому розділі зібрані договори, додатки та додаткові угоди,
-                які потрібно скачати, роздрукувати, підписати та передати постачальнику.
-            </p>
-        </div>
+<div class="dashboard-page documents-page-v2">
+    <div class="documents-main-v2">
+        <section class="documents-top-v2">
+            <div class="documents-intro-v2">
+                <h2>Документи, яким потрібне підписання</h2>
+                <p>
+                    Усі договори, додатки та додаткові угоди в одному реєстрі. Шукайте документи,
+                    контролюйте терміни та завантажуйте підписані файли без зайвих переходів.
+                </p>
+            </div>
 
-        <div class="secure-box">
-            <span>Захищений доступ</span>
-            <strong>PDF-посилання можуть бути тимчасовими та самознищуваними</strong>
-        </div>
-    </section>
+            <aside class="documents-secure-v2">
+                <span>Захищений доступ</span>
+                <strong>PDF-посилання можуть бути тимчасовими та самознищуваними</strong>
+            </aside>
+        </section>
 
-    <section class="documents-kpi-grid">
-        <div class="documents-kpi-card">
-            <div class="documents-kpi-label">Усього документів</div>
-            <div class="documents-kpi-value">{{ data.summary.total }}</div>
-            <div class="documents-kpi-note">договори, додатки, угоди</div>
-        </div>
+        <section class="documents-kpis-v2" aria-label="Підсумок документів">
+            <article class="doc-kpi-v2" style="--accent: #84bd00;">
+                <div class="doc-kpi-icon-v2">
+                    <svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+                </div>
+                <div>
+                    <div class="doc-kpi-label-v2">Усього документів</div>
+                    <div class="doc-kpi-value-v2">{{ data.summary.total }}</div>
+                    <div class="doc-kpi-note-v2">усі документи</div>
+                </div>
+            </article>
 
-        <div class="documents-kpi-card warning">
-            <div class="documents-kpi-label">Очікують підпису</div>
-            <div class="documents-kpi-value">{{ data.summary.waiting_signature }}</div>
-            <div class="documents-kpi-note">потрібна дія клієнта</div>
-        </div>
+            <article class="doc-kpi-v2" style="--accent: #f59e0b;">
+                <div class="doc-kpi-icon-v2">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                </div>
+                <div>
+                    <div class="doc-kpi-label-v2">Очікують підпису</div>
+                    <div class="doc-kpi-value-v2">{{ waiting_count }}</div>
+                    <div class="doc-kpi-note-v2">потребують вашої дії</div>
+                </div>
+            </article>
 
-        <div class="documents-kpi-card danger">
-            <div class="documents-kpi-label">Термінові</div>
-            <div class="documents-kpi-value">{{ data.summary.urgent }}</div>
-            <div class="documents-kpi-note">наближається дедлайн</div>
-        </div>
+            <article class="doc-kpi-v2" style="--accent: #ef4444;">
+                <div class="doc-kpi-icon-v2">
+                    <svg viewBox="0 0 24 24"><path d="M12 3 2 21h20L12 3z"/><path d="M12 9v5"/><path d="M12 17h.01"/></svg>
+                </div>
+                <div>
+                    <div class="doc-kpi-label-v2">Термінові</div>
+                    <div class="doc-kpi-value-v2">{{ urgent_count }}</div>
+                    <div class="doc-kpi-note-v2">наближається дедлайн</div>
+                </div>
+            </article>
 
-        <div class="documents-kpi-card">
-            <div class="documents-kpi-label">Підписано</div>
-            <div class="documents-kpi-value">{{ data.summary.signed }}</div>
-            <div class="documents-kpi-note">оброблені документи</div>
-        </div>
-    </section>
+            <article class="doc-kpi-v2" style="--accent: #22a447;">
+                <div class="doc-kpi-icon-v2">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>
+                </div>
+                <div>
+                    <div class="doc-kpi-label-v2">Підписано</div>
+                    <div class="doc-kpi-value-v2">{{ signed_count }}</div>
+                    <div class="doc-kpi-note-v2">оброблені документи</div>
+                </div>
+            </article>
+        </section>
 
-    <section class="documents-toolbar">
-        <input
-            id="documentSearch"
-            type="text"
-            placeholder="Пошук за номером, назвою, договором або типом"
-            onkeyup="filterDocuments()"
-        >
+        <section class="documents-toolbar-v2">
+            <div class="doc-search-wrap-v2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="documentSearch" class="doc-search-v2" type="text" placeholder="Пошук за назвою, номером, договором..." oninput="filterDocuments()">
+            </div>
 
-        <select id="documentStatusFilter" onchange="filterDocuments()">
-            <option value="all">Усі статуси</option>
-            <option value="waiting">Очікує підпису</option>
-            <option value="urgent">Терміново</option>
-            <option value="signed">Підписано</option>
-        </select>
+            <select id="documentStatusFilter" class="doc-select-v2" onchange="filterDocuments()">
+                <option value="all">Статус: Усі</option>
+                <option value="waiting">Очікує підпису</option>
+                <option value="urgent">Терміново</option>
+                <option value="signed">Підписано</option>
+            </select>
 
-        <select id="documentTypeFilter" onchange="filterDocuments()">
-            <option value="all">Усі типи</option>
-            <option value="Договір">Договір</option>
-            <option value="Додаток">Додаток</option>
-            <option value="Додаткова угода">Додаткова угода</option>
-        </select>
-    </section>
+            <select id="documentTypeFilter" class="doc-select-v2" onchange="filterDocuments()">
+                <option value="all">Тип: Усі</option>
+                <option value="Договір">Договір</option>
+                <option value="Додаток">Додаток</option>
+                <option value="Додаткова угода">Додаткова угода</option>
+            </select>
 
-    <section class="documents-panel">
-        <h2>Реєстр документів</h2>
-        <p class="muted">
-            Перелік документів із PDF-посиланнями для скачування, друку та підписання.
-        </p>
+            <select id="documentDateFilter" class="doc-select-v2" onchange="filterDocuments()">
+                <option value="newest">Дата: Від нових</option>
+                <option value="oldest">Дата: Від старих</option>
+                <option value="deadline">За терміном підпису</option>
+            </select>
 
-        <div class="documents-list">
+            <button type="button" class="doc-filter-btn-v2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+                Фільтри
+            </button>
 
-            {% for doc in data.documents %}
-                <article
-                    class="document-card {{ doc.status }}"
-                    data-status="{{ doc.status }}"
-                    data-type="{{ doc.type }}"
-                    data-search="{{ doc.number }} {{ doc.title }} {{ doc.contract }} {{ doc.type }} {{ doc.status_text }}"
-                >
-                    <div>
-                        <div class="document-number">{{ doc.number }}</div>
-                        <div class="document-title">{{ doc.title }}</div>
-                        <div class="document-note">{{ doc.note }}</div>
+            <button type="button" class="doc-reset-v2" onclick="resetDocumentFilters()">Скинути</button>
+        </section>
+
+        <div class="doc-active-filters-v2" id="documentActiveFilters" aria-live="polite"></div>
+
+        <section class="documents-registry-v2" id="documentsRegistry">
+            <div class="registry-head-v2">
+                <div class="registry-title-v2">
+                    <h2>Реєстр документів</h2>
+                    <span><strong id="visibleDocumentsCount">{{ data.documents|length }}</strong> документів знайдено</span>
+                </div>
+
+                <div class="registry-actions-v2">
+                    <div class="view-toggle-v2" aria-label="Вигляд реєстру">
+                        <button type="button" class="active" title="Список" data-view="list" onclick="setDocumentsView('list')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+                        </button>
+                        <button type="button" title="Плитка" data-view="cards" onclick="setDocumentsView('cards')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        </button>
                     </div>
 
-                    <div class="document-meta">
-                        <span>{{ doc.type }}</span>
-                        <span class="meta-dot"></span>
-                        <span>{{ doc.contract }}</span>
-                        <span class="meta-dot"></span>
-                        <span>створено {{ doc.created_at }}</span>
-                        <span class="meta-dot"></span>
-                        <span>підписати до {{ doc.sign_until }}</span>
-                    </div>
+                    <button type="button" class="doc-create-btn-v2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                        Створити документ
+                    </button>
+                </div>
+            </div>
 
-<div class="document-actions">
-    <div class="document-status-group">
-        <div class="document-status">{{ doc.status_text }}</div>
+            <div class="documents-table-wrap-v2">
+                <table class="documents-table-v2">
+                    <thead>
+                        <tr>
+                            <th style="width: 48px;"><input id="selectAllDocuments" class="doc-check-v2" type="checkbox" aria-label="Обрати всі" onchange="toggleAllDocuments(this)"></th>
+                            <th>Документ</th>
+                            <th>Тип</th>
+                            <th>Договір</th>
+                            <th>Створено</th>
+                            <th>Термін підпису</th>
+                            <th>Статус</th>
+                            <th style="text-align: right;">Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in data.documents %}
+                            {% set accent = '#f59e0b' if doc.status == 'waiting' else '#ef4444' if doc.status == 'urgent' else '#22a447' %}
+                            {% set chip_bg = '#fff4d6' if doc.status == 'waiting' else '#ffe4e6' if doc.status == 'urgent' else '#e8f7df' %}
+                            {% set chip_color = '#9a6100' if doc.status == 'waiting' else '#b42318' if doc.status == 'urgent' else '#3f7500' %}
+                            {% set deadline_color = '#ef4444' if doc.status == 'urgent' else '#16a34a' if doc.status == 'signed' else '#334155' %}
+                            <tr class="document-row-v2"
+                                style="--row-accent: {{ accent }}; --chip-bg: {{ chip_bg }}; --chip-color: {{ chip_color }}; --deadline-color: {{ deadline_color }};"
+                                data-status="{{ doc.status }}"
+                                data-type="{{ doc.type }}"
+                                data-created="{{ doc.created_at }}"
+                                data-deadline="{{ doc.sign_until }}"
+                                data-search="{{ doc.number }} {{ doc.title }} {{ doc.contract }} {{ doc.type }} {{ doc.status_text }} {{ doc.note }}">
+                                <td><input class="doc-check-v2" type="checkbox" aria-label="Обрати {{ doc.number }}"></td>
+                                <td>
+                                    <div class="doc-name-cell-v2">
+                                        <div class="doc-type-icon-v2 {% if doc.type == 'Додаткова угода' %}doc{% elif doc.type == 'Поліс' %}pages{% else %}pdf{% endif %}">{% if doc.type == 'Додаткова угода' %}DOC{% elif doc.type == 'Поліс' %}PAGES{% else %}PDF{% endif %}</div>
+                                        <div>
+                                            <div class="doc-name-v2">{{ doc.number }}</div>
+                                            <div class="doc-sub-v2">{{ doc.title }}</div>
+                                            <div class="doc-small-v2">Версія 1.0</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="doc-strong-v2">{{ doc.type }}</div>
+                                    <div class="doc-small-v2">PDF</div>
+                                </td>
+                                <td>
+                                    <div class="doc-strong-v2">{{ doc.contract }}</div>
+                                    <div class="doc-small-v2">{{ doc.note }}</div>
+                                </td>
+                                <td>
+                                    <div class="doc-strong-v2">{{ doc.created_at }}</div>
+                                    <div class="doc-small-v2">10:24</div>
+                                </td>
+                                <td class="doc-deadline-v2">
+                                    <strong>{{ doc.sign_until }}</strong>
+                                    <span>{% if doc.status == "urgent" %}Сьогодні{% elif doc.status == "signed" %}Підписано{% else %}очікує дії{% endif %}</span>
+                                </td>
+                                <td><span class="doc-status-chip-v2">{{ doc.status_text }}</span></td>
+                                <td>
+                                    <div class="doc-actions-v2">
+                                        {% if doc.status != "signed" %}
+                                            <label class="doc-action-primary-v2" id="upload-btn-{{ doc.number }}">
+                                                Підписати
+                                                <input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="showSignedUpload(this, '{{ doc.number }}')">
+                                            </label>
+                                        {% else %}
+                                            <button type="button" class="doc-action-secondary-v2" onclick="openPdfPreview('{{ doc.pdf_url }}')">Завантажити</button>
+                                        {% endif %}
+                                        <button type="button" class="doc-action-secondary-v2" onclick="openPdfPreview('{{ doc.pdf_url }}')">Переглянути</button>
+                                        <button type="button" class="doc-more-v2" aria-label="Більше дій">⋮</button>
+                                    </div>
+                                    <div class="signed-upload-note-v2" id="upload-note-{{ doc.number }}"></div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-        <span class="document-status-pill {{ doc.status }}">
-            {% if doc.status == "urgent" %}
-                Наближається дедлайн
-            {% elif doc.status == "waiting" %}
-                Потрібна дія
-            {% else %}
-                Завершено
-            {% endif %}
-        </span>
+            <footer class="registry-footer-v2">
+                <label>Показувати по:
+                    <select class="doc-page-size-v2">
+                        <option>10</option>
+                        <option>20</option>
+                        <option>50</option>
+                    </select>
+                </label>
+
+                <div id="registryRangeText">1-{{ data.documents|length }} з {{ data.summary.total }}</div>
+
+                <nav class="doc-pagination-v2" aria-label="Пагінація">
+                    <button class="doc-page-btn-v2" type="button">‹</button>
+                    <button class="doc-page-btn-v2 active" type="button">1</button>
+                    <button class="doc-page-btn-v2" type="button">2</button>
+                    <button class="doc-page-btn-v2" type="button">3</button>
+                    <span>...</span>
+                    <button class="doc-page-btn-v2" type="button">›</button>
+                </nav>
+            </footer>
+        </section>
     </div>
-
-    <button
-        type="button"
-        class="document-btn"
-        onclick="openPdfPreview('{{ doc.pdf_url }}')"
-    >
-        PDF
-    </button>
-
-    {% if doc.status != "signed" %}
-        <label class="document-upload-btn" id="upload-btn-{{ doc.number }}">
-            Завантажити підписаний
-            <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                hidden
-                onchange="showSignedUpload(this, '{{ doc.number }}')"
-            >
-        </label>
-
-        <div class="signed-upload-note" id="upload-note-{{ doc.number }}"></div>
-    {% endif %}
-</div>
-                </article>
-            {% endfor %}
-
-        </div>
-    </section>
 
 </div>
 
 <script>
-let currentPdfUrl = "";
-
 function openPdfPreview(url) {
     document.getElementById("pdfPreview").classList.add("active");
     document.getElementById("pdfPreviewFrame").src = url;
     document.getElementById("pdfDownloadBtn").href = url;
-
     document.body.style.overflow = "hidden";
 }
 
 function closePdfPreview() {
     document.getElementById("pdfPreview").classList.remove("active");
     document.getElementById("pdfPreviewFrame").src = "";
-
     document.body.style.overflow = "";
 }
 
 function printPreviewPdf() {
     const iframe = document.getElementById("pdfPreviewFrame");
-
     if (iframe && iframe.contentWindow) {
         iframe.contentWindow.focus();
         iframe.contentWindow.print();
@@ -476,93 +1009,135 @@ function printPreviewPdf() {
 function showSignedUpload(input, documentNumber) {
     const note = document.getElementById("upload-note-" + documentNumber);
     const button = document.getElementById("upload-btn-" + documentNumber);
-
     if (!input.files || !input.files.length) {
         note.textContent = "";
         return;
     }
-
     note.textContent = "Обрано: " + input.files[0].name;
-
     if (button) {
         button.classList.add("uploaded");
-        button.firstChild.nodeValue = "Файл завантажено";
+        button.childNodes[0].nodeValue = "Файл додано";
     }
 }
 
-function filterDocuments() {
-    const search = document.getElementById("documentSearch").value.toLowerCase();
-    const status = document.getElementById("documentStatusFilter").value;
-    const type = document.getElementById("documentTypeFilter").value;
+function parseUaDate(value) {
+    if (!value || value === "—") return 0;
+    const parts = value.split(".");
+    if (parts.length !== 3) return 0;
+    return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])).getTime();
+}
 
-    document.querySelectorAll(".document-card").forEach(function(card) {
-        const matchesSearch = card.dataset.search.toLowerCase().includes(search);
-        const matchesStatus = status === "all" || card.dataset.status === status;
-        const matchesType = type === "all" || card.dataset.type === type;
+function sortDocumentRows(mode) {
+    const tbody = document.querySelector(".documents-table-v2 tbody");
+    const rows = Array.from(tbody.querySelectorAll(".document-row-v2"));
+    rows.sort(function(a, b) {
+        if (mode === "oldest") return parseUaDate(a.dataset.created) - parseUaDate(b.dataset.created);
+        if (mode === "deadline") return parseUaDate(a.dataset.deadline) - parseUaDate(b.dataset.deadline);
+        return parseUaDate(b.dataset.created) - parseUaDate(a.dataset.created);
+    });
+    rows.forEach(function(row) { tbody.appendChild(row); });
+}
 
-        card.style.display =
-            matchesSearch && matchesStatus && matchesType
-                ? "grid"
-                : "none";
+function toggleAllDocuments(master) {
+    document.querySelectorAll(".document-row-v2").forEach(function(row) {
+        if (row.style.display !== "none") {
+            const check = row.querySelector("td .doc-check-v2");
+            if (check) check.checked = master.checked;
+        }
     });
 }
 
+function syncSelectAllState() {
+    const master = document.getElementById("selectAllDocuments");
+    if (!master) return;
+    const visibleChecks = Array.from(document.querySelectorAll(".document-row-v2"))
+        .filter(function(row) { return row.style.display !== "none"; })
+        .map(function(row) { return row.querySelector("td .doc-check-v2"); })
+        .filter(Boolean);
+    master.checked = visibleChecks.length > 0 && visibleChecks.every(function(check) { return check.checked; });
+    master.indeterminate = visibleChecks.some(function(check) { return check.checked; }) && !master.checked;
+}
+
+function setDocumentsView(view) {
+    const registry = document.getElementById("documentsRegistry");
+    registry.classList.toggle("card-view", view === "cards");
+    document.querySelectorAll(".view-toggle-v2 button").forEach(function(button) {
+        button.classList.toggle("active", button.dataset.view === view);
+    });
+}
+
+function updateFilterChips(search, status, type, dateMode) {
+    const chips = document.getElementById("documentActiveFilters");
+    const statusText = document.getElementById("documentStatusFilter").selectedOptions[0].textContent.replace("Статус: ", "");
+    const typeText = document.getElementById("documentTypeFilter").selectedOptions[0].textContent.replace("Тип: ", "");
+    const dateText = document.getElementById("documentDateFilter").selectedOptions[0].textContent.replace("Дата: ", "");
+    const active = [];
+    if (search) active.push("Пошук: " + search);
+    if (status !== "all") active.push("Статус: " + statusText);
+    if (type !== "all") active.push("Тип: " + typeText);
+    if (dateMode !== "newest") active.push("Сортування: " + dateText);
+    chips.innerHTML = active.map(function(item) {
+        return '<span class="doc-filter-chip-v2">' + item + ' <span>×</span></span>';
+    }).join("");
+}
+
+function filterDocuments() {
+    const search = document.getElementById("documentSearch").value.trim().toLowerCase();
+    const status = document.getElementById("documentStatusFilter").value;
+    const type = document.getElementById("documentTypeFilter").value;
+    const dateMode = document.getElementById("documentDateFilter").value;
+    sortDocumentRows(dateMode);
+    let visible = 0;
+
+    document.querySelectorAll(".document-row-v2").forEach(function(row) {
+        const matchesSearch = row.dataset.search.toLowerCase().includes(search);
+        const matchesStatus = status === "all" || row.dataset.status === status;
+        const matchesType = type === "all" || row.dataset.type === type;
+        const show = matchesSearch && matchesStatus && matchesType;
+        row.style.display = show ? "table-row" : "none";
+        if (show) visible += 1;
+    });
+
+    document.getElementById("visibleDocumentsCount").textContent = visible;
+    document.getElementById("registryRangeText").textContent = visible ? "1-" + visible + " з " + visible : "0 з 0";
+    updateFilterChips(search, status, type, dateMode);
+    syncSelectAllState();
+}
+
+function resetDocumentFilters() {
+    document.getElementById("documentSearch").value = "";
+    document.getElementById("documentStatusFilter").value = "all";
+    document.getElementById("documentTypeFilter").value = "all";
+    document.getElementById("documentDateFilter").value = "newest";
+    filterDocuments();
+}
+
 document.addEventListener("keydown", function(event) {
-    if (event.key === "Escape") {
-        closePdfPreview();
-    }
+    if (event.key === "Escape") closePdfPreview();
+});
+
+document.addEventListener("change", function(event) {
+    if (event.target.matches(".document-row-v2 .doc-check-v2")) syncSelectAllState();
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    sortDocumentRows(document.getElementById("documentDateFilter").value);
+    syncSelectAllState();
 });
 </script>
+
 <div class="pdf-preview-overlay" id="pdfPreview">
-
     <div class="pdf-preview-modal">
-
         <div class="pdf-preview-header">
-
-            <div class="pdf-preview-title">
-                Перегляд документа
-            </div>
-
+            <div class="pdf-preview-title">Перегляд документа</div>
             <div class="pdf-preview-actions">
-
-                <a
-                    id="pdfDownloadBtn"
-                    class="pdf-preview-btn"
-                    href="#"
-                    target="_blank"
-                    download
-                >
-                    Завантажити
-                </a>
-
-                <button
-                    type="button"
-                    class="pdf-preview-btn"
-                    onclick="printPreviewPdf()"
-                >
-                    Друк
-                </button>
-
-                <button
-                    type="button"
-                    class="pdf-preview-close"
-                    onclick="closePdfPreview()"
-                >
-                    ×
-                </button>
-
+                <a id="pdfDownloadBtn" class="pdf-preview-btn" href="#" target="_blank" download>Завантажити</a>
+                <button type="button" class="pdf-preview-btn" onclick="printPreviewPdf()">Друк</button>
+                <button type="button" class="pdf-preview-close" onclick="closePdfPreview()">×</button>
             </div>
-
         </div>
-
-        <iframe
-            id="pdfPreviewFrame"
-            class="pdf-preview-frame"
-        ></iframe>
-
+        <iframe id="pdfPreviewFrame" class="pdf-preview-frame"></iframe>
     </div>
-
 </div>
-
 
 {% endblock %}
